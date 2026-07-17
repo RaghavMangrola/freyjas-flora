@@ -66,7 +66,7 @@ final class CompostReminderOverlay extends Overlay
 		this.fruitTreeSaplingIcon = itemManager.getImage(ItemID.PLANTPOT_APPLE_SAPLING);
 		this.hardwoodSaplingIcon = itemManager.getImage(ItemID.PLANTPOT_TEAK_SAPLING);
 		this.calquatSaplingIcon = itemManager.getImage(ItemID.PLANTPOT_CALQUAT_SAPLING);
-		this.seaweedSporeIcon = itemManager.getImage(net.runelite.api.ItemID.SEAWEED_SPORE);
+		this.seaweedSporeIcon = itemManager.getImage(ItemID.SEAWEED_SEED);
 		this.ultracompostIcon = itemManager.getImage(ItemID.BUCKET_ULTRACOMPOST);
 		setPosition(OverlayPosition.DYNAMIC);
 		setPriority(PRIORITY_HIGH);

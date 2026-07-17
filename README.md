@@ -118,6 +118,6 @@ test classpath only to launch a local RuneLite development client.
 
 The `run` task starts a RuneLite development client with Farm Run Helper loaded.
 
-Before submitting to the Plugin Hub, set the desired public author name in
-`runelite-plugin.properties`, publish this directory as its own public GitHub
-repository, and follow the Plugin Hub's current submission instructions.
+Before submitting to the Plugin Hub, publish this directory as the root of its
+own public GitHub repository and follow the Plugin Hub's current submission
+instructions.
