@@ -11,6 +11,8 @@ import net.runelite.client.plugins.timetracking.farming.CompostState;
 
 final class TimeTrackingService
 {
+	static final int BIRD_HOUSE_DURATION_SECONDS = 50 * 60;
+
 	private final Client client;
 	private final ConfigManager configManager;
 
@@ -54,21 +56,30 @@ final class TimeTrackingService
 			TimeTrackingConfig.FARM_TICK_OFFSET,
 			int.class);
 
-		long readyAt = decoded.getState() == PatchState.GROWING
-			? FarmingClock.readyAt(
-				tickRate,
-				decoded.getStage(),
-				decoded.getStages(),
-				value.getObservedAt(),
-				offsetPrecision,
-				offset)
-			: 0;
+		long readyAt = 0;
+		if (decoded.getState() == PatchState.GROWING)
+		{
+			readyAt = patch.getType() == PatchType.BIRD_HOUSE
+				? birdHouseReadyAt(value.getObservedAt())
+				: FarmingClock.readyAt(
+					tickRate,
+					decoded.getStage(),
+					decoded.getStages(),
+					value.getObservedAt(),
+					offsetPrecision,
+					offset);
+		}
 
 		return PatchPrediction.known(
 			decoded.getCropName(),
 			decoded.getState(),
 			value.getObservedAt(),
 			readyAt);
+	}
+
+	static long birdHouseReadyAt(long observedAt)
+	{
+		return observedAt + BIRD_HOUSE_DURATION_SECONDS;
 	}
 
 	boolean hasRecordedCompost(FarmPatch patch)
@@ -78,6 +89,10 @@ final class TimeTrackingService
 
 	CompostState getRecordedCompost(FarmPatch patch)
 	{
+		if (!patch.supportsCompostReminder())
+		{
+			return null;
+		}
 		return configManager.getRSProfileConfiguration(
 			TimeTrackingConfig.CONFIG_GROUP,
 			patch.getTimeTrackingKey() + "." + TimeTrackingConfig.COMPOST,

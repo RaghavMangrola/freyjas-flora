@@ -14,6 +14,7 @@ public class PatchStateDecoderParityTest
 	@Test
 	public void matchesRuneLiteTimeTrackingForAllWoodyPatchValues() throws ReflectiveOperationException
 	{
+		assertParity(PatchType.HOPS, PatchImplementation.HOPS);
 		assertParity(PatchType.TREE, PatchImplementation.TREE);
 		assertParity(PatchType.FRUIT_TREE, PatchImplementation.FRUIT_TREE);
 		assertParity(PatchType.HARDWOOD_TREE, PatchImplementation.HARDWOOD_TREE);

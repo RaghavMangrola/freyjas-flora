@@ -1,21 +1,21 @@
 # PatchMaster
 
-PatchMaster is a visual-only RuneLite plugin for herb, regular tree, fruit tree,
-hardwood tree, calquat, coral, and giant seaweed runs. It reads the same profile-scoped records maintained by
+PatchMaster is a visual-only RuneLite plugin for herb, hops, regular tree, fruit tree,
+hardwood tree, calquat, coral, giant seaweed, and birdhouse runs. It reads the same profile-scoped records maintained by
 RuneLite's built-in Time Tracking plugin and sends user-selected destinations
 to the Shortest Path plugin.
 
 ## Features
 
-- Shows all 36 supported destinations: 10 herb, 7 regular tree, 7 fruit tree,
+- Shows all 45 supported destinations: 10 herb, 5 hops, 7 regular tree, 7 fruit tree,
   5 hardwood tree, 3 calquat, 2 Great Conch coral, and 2 Fossil Island seaweed
-  patches.
+  patches, plus 4 Fossil Island birdhouses.
 - Displays ready, growing, diseased, dead, empty, and not-yet-observed states.
 - Uses RuneLite's farming-tick offset and current profile when estimating ready
   times.
 - Provides **Start run**, **Next patch**, and per-patch route buttons.
-- Groups patch controls into compact, collapsible herb, tree, fruit tree,
-  hardwood tree, calquat, coral, and seaweed sections with per-group status
+- Groups patch controls into compact, collapsible herb, hops, tree, fruit tree,
+  hardwood tree, calquat, coral, seaweed, and birdhouse sections with per-group status
   counts.
 - Lets users reorder those patch types from the sidebar so the visible panel and
   **Start run**/**Next patch** route sequence match their preferred farm run.
@@ -27,13 +27,16 @@ to the Shortest Path plugin.
 - Lets users include or exclude empty and unknown patches from a ready run.
 - Lets users enable or disable every patch type and individual patch in the
   RuneLite config.
+- Reads RuneLite's profile-scoped birdhouse records and shows each house as
+  growing, ready, unseeded, empty, or not yet observed using the standard
+  50-minute timer.
 - Shows exact seed and sapling quantities from the live inventory plus the last
   Bank and Seed Vault snapshots saved for the active RuneScape profile. Click
   the seed summary to see which location holds each item; empty patches point
   out when a usable planting item is stored instead of carried.
 - Highlights visible ready, empty, dead, and diseased patches with subtle
   farming-themed outlines. Magic secateurs mark ready/dead patches, a herb seed
-  marks empty patches, and ultracompost marks growing herb/seaweed patches that
+  marks empty patches, and ultracompost marks growing herb/hops/seaweed patches that
   still need compost.
 
 ## Requirements and usage
@@ -61,7 +64,8 @@ switch followed by its individual destinations. The sidebar **Order** editor
 saves a separate patch-type sequence for each RuneLite profile; disabled types
 keep their position for later re-enabling. **Skip empty without planting items**
 is optional; when enabled, the route planner skips an empty seeded patch if its
-corresponding seed, sapling, or spore is not in the inventory.
+corresponding seed, sapling, or spore is not in the inventory. Birdhouses are
+not filtered by this farming-patch setting.
 
 Time Tracking only knows a patch after the account has visited a region where
 RuneLite can observe it. Unknown patches can be included in a run specifically
@@ -78,7 +82,7 @@ means that storage has not been observed for the current RuneScape profile yet.
 The Plugin Hub already has broader farming plugins that manage supplies,
 teleport preferences, or scene highlights. PatchMaster is deliberately
 narrower: it is a Time Tracking view and Shortest Path controller for the
-supported farming-run patch families. It does not duplicate inventory loadouts,
+supported farming-run and birdhouse families. It does not duplicate inventory loadouts,
 interaction highlighting, profit tracking, or custom teleport logic.
 
 ## Rule-compliance boundary

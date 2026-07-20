@@ -26,6 +26,17 @@ final class SeedInventoryService
 		"Guam seed", "Marrentill seed", "Tarromin seed", "Harralander seed", "Ranarr seed",
 		"Toadflax seed", "Irit seed", "Avantoe seed", "Huasca seed", "Kwuarm seed",
 		"Snapdragon seed", "Cadantine seed", "Lantadyme seed", "Dwarf weed seed", "Torstol seed"));
+	private static final Set<Integer> HOPS_SEED_IDS = new HashSet<>(Arrays.asList(
+		ItemID.BARLEY_SEED,
+		ItemID.HAMMERSTONE_HOP_SEED,
+		ItemID.ASGARNIAN_HOP_SEED,
+		ItemID.JUTE_SEED,
+		ItemID.YANILLIAN_HOP_SEED,
+		ItemID.FLAX_SEED,
+		ItemID.KRANDORIAN_HOP_SEED,
+		ItemID.WILDBLOOD_HOP_SEED,
+		ItemID.HEMP_SEED,
+		ItemID.COTTON_SEED));
 	private static final Set<String> TREE_SEED_NAMES = new HashSet<>(Arrays.asList(
 		"Acorn", "Willow seed", "Maple seed", "Yew seed", "Magic seed"));
 	private static final Set<String> FRUIT_TREE_SEED_NAMES = new HashSet<>(Arrays.asList(
@@ -244,6 +255,11 @@ final class SeedInventoryService
 		if (HERB_SEED_NAMES.contains(name))
 		{
 			patchType = PatchType.HERB;
+			directlyPlantable = true;
+		}
+		else if (HOPS_SEED_IDS.contains(itemId))
+		{
+			patchType = PatchType.HOPS;
 			directlyPlantable = true;
 		}
 		else if (TREE_SAPLING_IDS.contains(itemId))

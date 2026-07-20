@@ -17,25 +17,29 @@ import static org.junit.Assert.assertTrue;
 public class FarmRunHelperConfigTest
 {
 	@Test
-	public void placesSevenCollapsedPatchTypeSectionsAfterPrimarySettings() throws Exception
+	public void placesNineCollapsedPatchTypeSectionsAfterPrimarySettings() throws Exception
 	{
 		String[] fields = {
 			"HERB_PATCHES",
+			"HOPS_PATCHES",
 			"TREE_PATCHES",
 			"FRUIT_TREE_PATCHES",
 			"HARDWOOD_TREE_PATCHES",
 			"CALQUAT_PATCHES",
 			"CORAL_PATCHES",
-			"SEAWEED_PATCHES"
+			"SEAWEED_PATCHES",
+			"BIRD_HOUSE_PATCHES"
 		};
 		String[] names = {
 			"Herbs",
+			"Hops",
 			"Trees",
 			"Fruit trees",
 			"Hardwood trees",
 			"Calquat trees",
 			"Coral",
-			"Seaweed"
+			"Seaweed",
+			"Birdhouses"
 		};
 
 		for (int index = 0; index < fields.length; index++)
@@ -66,7 +70,7 @@ public class FarmRunHelperConfigTest
 		assertEquals(1, highlights.position());
 		assertTrue(highlights.closedByDefault());
 		assertEquals("Shortest Path", shortestPath.name());
-		assertEquals(9, shortestPath.position());
+		assertEquals(11, shortestPath.position());
 		assertTrue(shortestPath.closedByDefault());
 	}
 
@@ -78,6 +82,10 @@ public class FarmRunHelperConfigTest
 			"showHerbs", "enableArdougne", "enableCatherby", "enableCivitas", "enableFalador",
 			"enableFarmingGuild", "enableHarmony", "enableHosidius", "enableMorytania",
 			"enableTrollStronghold", "enableWeiss"
+		});
+		expected.put(FarmRunHelperConfig.HOPS_PATCHES, new String[]{
+			"showHops", "enableAldarinHops", "enableEntranaHops", "enableLumbridgeHops",
+			"enableSeersVillageHops", "enableYanilleHops"
 		});
 		expected.put(FarmRunHelperConfig.TREE_PATCHES, new String[]{
 			"showTrees", "enableAuburnvaleTree", "enableFaladorTree", "enableFarmingGuildTree",
@@ -102,6 +110,10 @@ public class FarmRunHelperConfigTest
 		});
 		expected.put(FarmRunHelperConfig.SEAWEED_PATCHES, new String[]{
 			"showSeaweed", "enableSeaweedNorth", "enableSeaweedSouth"
+		});
+		expected.put(FarmRunHelperConfig.BIRD_HOUSE_PATCHES, new String[]{
+			"showBirdHouses", "enableValleyNorthBirdHouse", "enableValleySouthBirdHouse",
+			"enableMeadowNorthBirdHouse", "enableMeadowSouthBirdHouse"
 		});
 
 		for (Map.Entry<String, String[]> entry : expected.entrySet())
@@ -153,5 +165,6 @@ public class FarmRunHelperConfigTest
 		assertEquals(PatchMasterTheme.EMPTY, config.emptyPatchColor());
 		assertEquals(PatchMasterTheme.DEAD, config.deadPatchColor());
 		assertEquals(PatchMasterTheme.DISEASED, config.diseasedPatchColor());
+		assertEquals(TreeReadyAction.MAGIC_SECATEURS, config.treeReadyAction());
 	}
 }

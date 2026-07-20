@@ -23,9 +23,15 @@ public class CompostReminderTest
 	}
 
 	@Test
-	public void includesSeaweedButNotCoral()
+	public void followsThePatchTypeCompostReminderPolicy()
 	{
+		assertTrue(CompostReminder.shouldShow(FarmPatch.HOPS_YANILLE, PatchState.GROWING, false));
+		assertTrue(CompostReminder.shouldShow(FarmPatch.TREE_FALADOR, PatchState.GROWING, false));
+		assertTrue(CompostReminder.shouldShow(FarmPatch.FRUIT_TREE_CATHERBY, PatchState.GROWING, false));
+		assertTrue(CompostReminder.shouldShow(FarmPatch.HARDWOOD_FOSSIL_ISLAND_EAST, PatchState.GROWING, false));
+		assertTrue(CompostReminder.shouldShow(FarmPatch.CALQUAT_TAI_BWO_WANNAI, PatchState.GROWING, false));
 		assertTrue(CompostReminder.shouldShow(FarmPatch.SEAWEED_NORTH, PatchState.GROWING, false));
 		assertFalse(CompostReminder.shouldShow(FarmPatch.CORAL_EAST, PatchState.GROWING, false));
+		assertFalse(CompostReminder.shouldShow(FarmPatch.BIRD_HOUSE_VALLEY_NORTH, PatchState.GROWING, false));
 	}
 }

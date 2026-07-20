@@ -20,14 +20,16 @@ public class FarmPatchTest
 			counts[patch.getType().ordinal()]++;
 		}
 
-		assertEquals(36, FarmPatch.values().length);
+		assertEquals(45, FarmPatch.values().length);
 		assertEquals(10, counts[PatchType.HERB.ordinal()]);
+		assertEquals(5, counts[PatchType.HOPS.ordinal()]);
 		assertEquals(7, counts[PatchType.TREE.ordinal()]);
 		assertEquals(7, counts[PatchType.FRUIT_TREE.ordinal()]);
 		assertEquals(5, counts[PatchType.HARDWOOD_TREE.ordinal()]);
 		assertEquals(3, counts[PatchType.CALQUAT.ordinal()]);
 		assertEquals(2, counts[PatchType.CORAL.ordinal()]);
 		assertEquals(2, counts[PatchType.SEAWEED.ordinal()]);
+		assertEquals(4, counts[PatchType.BIRD_HOUSE.ordinal()]);
 	}
 
 	@Test
@@ -35,6 +37,11 @@ public class FarmPatchTest
 	{
 		assertEquals("10548.4774", FarmPatch.ARDOUGNE.getTimeTrackingKey());
 		assertEquals("4922.4775", FarmPatch.FARMING_GUILD.getTimeTrackingKey());
+		assertEquals("5421.4771", FarmPatch.HOPS_ALDARIN.getTimeTrackingKey());
+		assertEquals("11060.4771", FarmPatch.HOPS_ENTRANA.getTimeTrackingKey());
+		assertEquals("12851.4771", FarmPatch.HOPS_LUMBRIDGE.getTimeTrackingKey());
+		assertEquals("10551.4771", FarmPatch.HOPS_SEERS_VILLAGE.getTimeTrackingKey());
+		assertEquals("10288.4771", FarmPatch.HOPS_YANILLE.getTimeTrackingKey());
 		assertEquals("5427.4771", FarmPatch.TREE_AUBURNVALE.getTimeTrackingKey());
 		assertEquals("11828.4771", FarmPatch.TREE_FALADOR.getTimeTrackingKey());
 		assertEquals("4922.7905", FarmPatch.TREE_FARMING_GUILD.getTimeTrackingKey());
@@ -61,6 +68,10 @@ public class FarmPatchTest
 		assertEquals("12581.4772", FarmPatch.CORAL_WEST.getTimeTrackingKey());
 		assertEquals("15008.4771", FarmPatch.SEAWEED_NORTH.getTimeTrackingKey());
 		assertEquals("15008.4772", FarmPatch.SEAWEED_SOUTH.getTimeTrackingKey());
+		assertEquals("birdhouse.1628", FarmPatch.BIRD_HOUSE_VALLEY_NORTH.getTimeTrackingKey());
+		assertEquals("birdhouse.1629", FarmPatch.BIRD_HOUSE_VALLEY_SOUTH.getTimeTrackingKey());
+		assertEquals("birdhouse.1626", FarmPatch.BIRD_HOUSE_MEADOW_NORTH.getTimeTrackingKey());
+		assertEquals("birdhouse.1627", FarmPatch.BIRD_HOUSE_MEADOW_SOUTH.getTimeTrackingKey());
 	}
 
 	@Test
@@ -113,6 +124,31 @@ public class FarmPatchTest
 			FarmPatch.HARDWOOD_FOSSIL_ISLAND_MIDDLE.getNavigationTarget(null));
 		assertEquals(new WorldPoint(3702, 3837, 0),
 			FarmPatch.HARDWOOD_FOSSIL_ISLAND_WEST.getNavigationTarget(null));
+	}
+
+	@Test
+	public void enablesEveryCatalogEntryWithTheDefaultConfiguration()
+	{
+		FarmRunHelperConfig config = new FarmRunHelperConfig() { };
+		for (FarmPatch patch : FarmPatch.values())
+		{
+			assertTrue(patch.name(), PatchSelection.isEnabled(config, patch));
+		}
+	}
+
+	@Test
+	public void usesTheStandardBirdHouseRunOrderAndTargets()
+	{
+		assertEquals(new WorldPoint(3768, 3761, 0),
+			FarmPatch.BIRD_HOUSE_VALLEY_NORTH.getNavigationTarget(null));
+		assertEquals(new WorldPoint(3763, 3755, 0),
+			FarmPatch.BIRD_HOUSE_VALLEY_SOUTH.getNavigationTarget(null));
+		assertEquals(new WorldPoint(3677, 3882, 0),
+			FarmPatch.BIRD_HOUSE_MEADOW_NORTH.getNavigationTarget(null));
+		assertEquals(new WorldPoint(3678, 3815, 0),
+			FarmPatch.BIRD_HOUSE_MEADOW_SOUTH.getNavigationTarget(null));
+		assertFalse(FarmPatch.BIRD_HOUSE_MEADOW_NORTH.matchesSceneObject(
+			FarmPatch.BIRD_HOUSE_MEADOW_NORTH.getVarbitId(), new WorldPoint(3677, 3882, 0)));
 	}
 
 	@Test

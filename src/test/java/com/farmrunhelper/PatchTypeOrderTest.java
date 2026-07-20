@@ -15,12 +15,14 @@ public class PatchTypeOrderTest
 		assertEquals(
 			Arrays.asList(
 				PatchType.HERB,
+				PatchType.HOPS,
 				PatchType.TREE,
 				PatchType.FRUIT_TREE,
 				PatchType.HARDWOOD_TREE,
 				PatchType.CALQUAT,
 				PatchType.CORAL,
-				PatchType.SEAWEED),
+				PatchType.SEAWEED,
+				PatchType.BIRD_HOUSE),
 			PatchTypeOrder.parse(PatchTypeOrder.DEFAULT_SERIALIZED));
 	}
 
@@ -32,10 +34,12 @@ public class PatchTypeOrderTest
 				PatchType.SEAWEED,
 				PatchType.HERB,
 				PatchType.TREE,
+				PatchType.HOPS,
 				PatchType.FRUIT_TREE,
 				PatchType.HARDWOOD_TREE,
 				PatchType.CALQUAT,
-				PatchType.CORAL),
+				PatchType.CORAL,
+				PatchType.BIRD_HOUSE),
 			PatchTypeOrder.parse("seaweed,HERB,seaweed,retired,,TREE"));
 	}
 
@@ -43,7 +47,7 @@ public class PatchTypeOrderTest
 	public void serializesOnlyOneOfEveryPatchType()
 	{
 		assertEquals(
-			"CORAL,HERB,TREE,FRUIT_TREE,HARDWOOD_TREE,CALQUAT,SEAWEED",
+			"CORAL,HERB,HOPS,TREE,FRUIT_TREE,HARDWOOD_TREE,CALQUAT,SEAWEED,BIRD_HOUSE",
 			PatchTypeOrder.serialize(Arrays.asList(
 				PatchType.CORAL,
 				PatchType.CORAL,
@@ -61,7 +65,8 @@ public class PatchTypeOrderTest
 		assertEquals(FarmPatch.ARDOUGNE, patches.get(2));
 		assertEquals(FarmPatch.CATHERBY, patches.get(3));
 		assertEquals(FarmPatch.WEISS, patches.get(11));
-		assertEquals(FarmPatch.TREE_AUBURNVALE, patches.get(12));
+		assertEquals(FarmPatch.HOPS_ALDARIN, patches.get(12));
+		assertEquals(FarmPatch.TREE_AUBURNVALE, patches.get(17));
 		assertEquals(FarmPatch.values().length, patches.size());
 	}
 

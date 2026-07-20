@@ -29,6 +29,29 @@ final class PatchStateDecoder
 		new HerbRange("Torstol", 103, 107)
 	};
 
+	private static final int[] HOPS_EMPTY_RANGES = {
+		0, 3, 126, 131, 136, 138, 147, 149, 160, 162, 175, 177,
+		192, 194, 206, 208, 217, 219, 227, 229, 236, 238, 247, 249, 254, 255
+	};
+	private static final HopsCrop[] HOPS_CROPS = {
+		new HopsCrop("Hammerstone", 5, 10, 4, 7, 8, 10, 11, 13, 132, 135, 139, 141),
+		new HopsCrop("Asgarnian", 6, 10, 14, 18, 19, 21, 22, 25, 142, 146, 150, 153),
+		new HopsCrop("Yanillian", 7, 10, 26, 31, 32, 34, 35, 39, 154, 159, 163, 167),
+		new HopsCrop("Krandorian", 8, 10, 40, 46, 47, 49, 50, 55, 168, 174, 178, 183),
+		new HopsCrop("Wildblood", 9, 10, 56, 63, 64, 66, 67, 73, 184, 191, 195, 201),
+		new HopsCrop("Barley", 5, 10, 74, 77, 78, 80, 81, 83, 202, 205, 209, 211),
+		new HopsCrop("Jute", 6, 10, 84, 88, 89, 91, 92, 95, 212, 216, 220, 223),
+		new HopsCrop("Flax", 4, 20, 96, 98, 99, 101, 102, 103, 224, 226, 230, 231),
+		new HopsCrop("Hemp", 5, 20, 104, 107, 108, 110, 111, 113, 232, 235, 239, 241),
+		new HopsCrop("Cotton", 6, 20, 114, 118, 119, 121, 122, 125, 242, 246, 250, 253)
+	};
+
+	private static final String[] BIRD_HOUSE_NAMES = {
+		"Bird house", "Oak bird house", "Willow bird house", "Teak bird house",
+		"Maple bird house", "Mahogany bird house", "Yew bird house", "Magic bird house",
+		"Redwood bird house"
+	};
+
 	private static final int[] TREE_EMPTY_RANGES = {
 		0, 7, 63, 72, 78, 79, 87, 88, 98, 99, 111, 112, 126, 136,
 		142, 143, 151, 152, 162, 163, 175, 176, 190, 191, 198, 255
@@ -96,6 +119,8 @@ final class PatchStateDecoder
 		{
 			case HERB:
 				return decodeHerb(value);
+			case HOPS:
+				return decodeHops(value);
 			case TREE:
 				return decodeWoody(value, TREE_EMPTY_RANGES, TREE_CROPS);
 			case FRUIT_TREE:
@@ -108,6 +133,8 @@ final class PatchStateDecoder
 				return decodeCoral(value);
 			case SEAWEED:
 				return decodeSeaweed(value);
+			case BIRD_HOUSE:
+				return decodeBirdHouse(value);
 			default:
 				return null;
 		}
@@ -172,6 +199,24 @@ final class PatchStateDecoder
 		}
 
 		for (WoodyCrop crop : crops)
+		{
+			DecodedPatchState decoded = crop.decode(value);
+			if (decoded != null)
+			{
+				return decoded;
+			}
+		}
+		return null;
+	}
+
+	private static DecodedPatchState decodeHops(int value)
+	{
+		if (matchesAnyRange(value, HOPS_EMPTY_RANGES))
+		{
+			return state("Empty", PatchState.EMPTY, 0, 1, 0);
+		}
+
+		for (HopsCrop crop : HOPS_CROPS)
 		{
 			DecodedPatchState decoded = crop.decode(value);
 			if (decoded != null)
@@ -285,6 +330,25 @@ final class PatchStateDecoder
 		return null;
 	}
 
+	private static DecodedPatchState decodeBirdHouse(int value)
+	{
+		if (value == 0)
+		{
+			return state("Empty", PatchState.EMPTY, 0, 1, 0);
+		}
+
+		int tier = (value - 1) / 3;
+		if (value < 0 || tier >= BIRD_HOUSE_NAMES.length)
+		{
+			return null;
+		}
+
+		String name = BIRD_HOUSE_NAMES[tier];
+		return value % 3 == 0
+			? state(name, PatchState.GROWING, 0, 1, 0)
+			: state(name, PatchState.EMPTY, 0, 1, 0);
+	}
+
 	private static DecodedPatchState state(
 		String cropName,
 		PatchState patchState,
@@ -371,6 +435,78 @@ final class PatchStateDecoder
 				return state(name, PatchState.DISEASED, 0, 0, 0);
 			}
 			if (matchesAnyRange(value, deadRanges))
+			{
+				return state(name, PatchState.DEAD, 0, 0, 0);
+			}
+			return null;
+		}
+	}
+
+	private static final class HopsCrop
+	{
+		private final String name;
+		private final int stages;
+		private final int tickRateMinutes;
+		private final int growingStart;
+		private final int growingEnd;
+		private final int readyStart;
+		private final int readyEnd;
+		private final int diseasedStart;
+		private final int diseasedEnd;
+		private final int regrowingStart;
+		private final int regrowingEnd;
+		private final int deadStart;
+		private final int deadEnd;
+
+		private HopsCrop(
+			String name,
+			int stages,
+			int tickRateMinutes,
+			int growingStart,
+			int growingEnd,
+			int readyStart,
+			int readyEnd,
+			int diseasedStart,
+			int diseasedEnd,
+			int regrowingStart,
+			int regrowingEnd,
+			int deadStart,
+			int deadEnd)
+		{
+			this.name = name;
+			this.stages = stages;
+			this.tickRateMinutes = tickRateMinutes;
+			this.growingStart = growingStart;
+			this.growingEnd = growingEnd;
+			this.readyStart = readyStart;
+			this.readyEnd = readyEnd;
+			this.diseasedStart = diseasedStart;
+			this.diseasedEnd = diseasedEnd;
+			this.regrowingStart = regrowingStart;
+			this.regrowingEnd = regrowingEnd;
+			this.deadStart = deadStart;
+			this.deadEnd = deadEnd;
+		}
+
+		private DecodedPatchState decode(int value)
+		{
+			if (value >= growingStart && value <= growingEnd)
+			{
+				return state(name, PatchState.GROWING, value - growingStart, stages, tickRateMinutes);
+			}
+			if (value >= readyStart && value <= readyEnd)
+			{
+				return state(name, PatchState.READY, stages - 1, stages, 0);
+			}
+			if (value >= diseasedStart && value <= diseasedEnd)
+			{
+				return state(name, PatchState.DISEASED, 0, 0, 0);
+			}
+			if (value >= regrowingStart && value <= regrowingEnd)
+			{
+				return state(name, PatchState.GROWING, value - regrowingStart, stages, tickRateMinutes);
+			}
+			if (value >= deadStart && value <= deadEnd)
 			{
 				return state(name, PatchState.DEAD, 0, 0, 0);
 			}

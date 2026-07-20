@@ -21,9 +21,17 @@ public interface FarmRunHelperConfig extends Config
 	String HERB_PATCHES = "herbPatches";
 
 	@ConfigSection(
+		name = "Hops",
+		description = "Choose the hops patches shown, routed, and highlighted",
+		position = 3,
+		closedByDefault = true
+	)
+	String HOPS_PATCHES = "hopsPatches";
+
+	@ConfigSection(
 		name = "Trees",
 		description = "Choose the regular tree patches shown, routed, and highlighted",
-		position = 3,
+		position = 4,
 		closedByDefault = true
 	)
 	String TREE_PATCHES = "treePatches";
@@ -31,7 +39,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Fruit trees",
 		description = "Choose the fruit tree patches shown, routed, and highlighted",
-		position = 4,
+		position = 5,
 		closedByDefault = true
 	)
 	String FRUIT_TREE_PATCHES = "fruitTreePatches";
@@ -39,7 +47,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Hardwood trees",
 		description = "Choose the hardwood patches shown, routed, and highlighted",
-		position = 5,
+		position = 6,
 		closedByDefault = true
 	)
 	String HARDWOOD_TREE_PATCHES = "hardwoodTreePatches";
@@ -47,7 +55,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Calquat trees",
 		description = "Choose the calquat patches shown, routed, and highlighted",
-		position = 6,
+		position = 7,
 		closedByDefault = true
 	)
 	String CALQUAT_PATCHES = "calquatPatches";
@@ -55,7 +63,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Coral",
 		description = "Choose the Great Conch coral nurseries shown and routed",
-		position = 7,
+		position = 8,
 		closedByDefault = true
 	)
 	String CORAL_PATCHES = "coralPatches";
@@ -63,10 +71,18 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Seaweed",
 		description = "Choose the seaweed patches shown, routed, and highlighted",
-		position = 8,
+		position = 9,
 		closedByDefault = true
 	)
 	String SEAWEED_PATCHES = "seaweedPatches";
+
+	@ConfigSection(
+		name = "Birdhouses",
+		description = "Choose the Fossil Island birdhouses shown and routed",
+		position = 10,
+		closedByDefault = true
+	)
+	String BIRD_HOUSE_PATCHES = "birdHousePatches";
 
 	@ConfigSection(
 		name = "Run behavior",
@@ -86,7 +102,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Shortest Path",
 		description = "Control how PatchMaster hands destinations to Shortest Path",
-		position = 9,
+		position = 11,
 		closedByDefault = true
 	)
 	String NAVIGATION = "navigation";
@@ -99,6 +115,18 @@ public interface FarmRunHelperConfig extends Config
 		position = 0
 	)
 	default boolean showHerbs()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "showHops",
+		name = "Include hops",
+		description = "Include hops patches in the panel, run planner, and scene highlights",
+		section = HOPS_PATCHES,
+		position = 0
+	)
+	default boolean showHops()
 	{
 		return true;
 	}
@@ -175,6 +203,18 @@ public interface FarmRunHelperConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "showBirdHouses",
+		name = "Include birdhouses",
+		description = "Include Fossil Island birdhouses in the panel and run planner",
+		section = BIRD_HOUSE_PATCHES,
+		position = 0
+	)
+	default boolean showBirdHouses()
+	{
+		return true;
+	}
+
 	@ConfigItem(keyName = "enableArdougne", name = "Ardougne", description = "Include the Ardougne herb patch", section = HERB_PATCHES, position = 1)
 	default boolean enableArdougne()
 	{
@@ -231,6 +271,36 @@ public interface FarmRunHelperConfig extends Config
 
 	@ConfigItem(keyName = "enableWeiss", name = "Weiss", description = "Include the Weiss herb patch", section = HERB_PATCHES, position = 10)
 	default boolean enableWeiss()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableAldarinHops", name = "Aldarin", description = "Include the Aldarin hops patch", section = HOPS_PATCHES, position = 1)
+	default boolean enableAldarinHops()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableEntranaHops", name = "Entrana", description = "Include the Entrana hops patch", section = HOPS_PATCHES, position = 2)
+	default boolean enableEntranaHops()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableLumbridgeHops", name = "Lumbridge", description = "Include the Lumbridge hops patch", section = HOPS_PATCHES, position = 3)
+	default boolean enableLumbridgeHops()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableSeersVillageHops", name = "Seers' Village", description = "Include the Seers' Village hops patch", section = HOPS_PATCHES, position = 4)
+	default boolean enableSeersVillageHops()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableYanilleHops", name = "Yanille", description = "Include the Yanille hops patch", section = HOPS_PATCHES, position = 5)
+	default boolean enableYanilleHops()
 	{
 		return true;
 	}
@@ -391,6 +461,30 @@ public interface FarmRunHelperConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(keyName = "enableValleyNorthBirdHouse", name = "Verdant Valley — Northeast", description = "Include the northeast Verdant Valley birdhouse", section = BIRD_HOUSE_PATCHES, position = 1)
+	default boolean enableValleyNorthBirdHouse()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableValleySouthBirdHouse", name = "Verdant Valley — Southwest", description = "Include the southwest Verdant Valley birdhouse", section = BIRD_HOUSE_PATCHES, position = 2)
+	default boolean enableValleySouthBirdHouse()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableMeadowNorthBirdHouse", name = "Mushroom Meadow — North", description = "Include the north Mushroom Meadow birdhouse", section = BIRD_HOUSE_PATCHES, position = 3)
+	default boolean enableMeadowNorthBirdHouse()
+	{
+		return true;
+	}
+
+	@ConfigItem(keyName = "enableMeadowSouthBirdHouse", name = "Mushroom Meadow — South", description = "Include the south Mushroom Meadow birdhouse", section = BIRD_HOUSE_PATCHES, position = 4)
+	default boolean enableMeadowSouthBirdHouse()
+	{
+		return true;
+	}
+
 	@ConfigItem(
 		keyName = PATCH_TYPE_ORDER_KEY,
 		name = "Patch type order",
@@ -453,7 +547,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigItem(
 		keyName = "waitForCompostBeforeAutoAdvance",
 		name = "Wait for compost",
-		description = "For herb and seaweed patches, wait until Time Tracking records compost before auto-advancing",
+		description = "For compostable farming patches, wait until Time Tracking records compost before auto-advancing",
 		section = RUN_PLANNING,
 		position = 4
 	)
@@ -532,6 +626,18 @@ public interface FarmRunHelperConfig extends Config
 	default Color diseasedPatchColor()
 	{
 		return PatchMasterTheme.DISEASED;
+	}
+
+	@ConfigItem(
+		keyName = "treeReadyAction",
+		name = "Tree ready icon",
+		description = "Icon shown on ready regular, fruit, hardwood, and calquat trees",
+		section = COMPOST_REMINDERS,
+		position = 6
+	)
+	default TreeReadyAction treeReadyAction()
+	{
+		return TreeReadyAction.MAGIC_SECATEURS;
 	}
 
 	@ConfigItem(

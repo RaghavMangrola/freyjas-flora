@@ -30,6 +30,18 @@ public class PatchStateDecoderTest
 	}
 
 	@Test
+	public void decodesHopsStates()
+	{
+		assertDecoded(PatchType.HOPS, 0, "Empty", PatchState.EMPTY, 0, 1, 0);
+		assertDecoded(PatchType.HOPS, 40, "Krandorian", PatchState.GROWING, 0, 8, 10);
+		assertDecoded(PatchType.HOPS, 47, "Krandorian", PatchState.READY, 7, 8, 0);
+		assertDecoded(PatchType.HOPS, 50, "Krandorian", PatchState.DISEASED, 0, 0, 0);
+		assertDecoded(PatchType.HOPS, 168, "Krandorian", PatchState.GROWING, 0, 8, 10);
+		assertDecoded(PatchType.HOPS, 178, "Krandorian", PatchState.DEAD, 0, 0, 0);
+		assertDecoded(PatchType.HOPS, 104, "Hemp", PatchState.GROWING, 0, 5, 20);
+	}
+
+	@Test
 	public void decodesRegularTreeStatesAndHealthChecks()
 	{
 		assertDecoded(PatchType.TREE, 0, "Empty", PatchState.EMPTY, 0, 1, 0);
@@ -100,6 +112,18 @@ public class PatchStateDecoderTest
 		assertDecoded(PatchType.SEAWEED, 11, "Seaweed", PatchState.DISEASED, 0, 0, 0);
 		assertDecoded(PatchType.SEAWEED, 14, "Seaweed", PatchState.DEAD, 0, 0, 0);
 		assertDecoded(PatchType.SEAWEED, 17, "Empty", PatchState.EMPTY, 0, 1, 0);
+	}
+
+	@Test
+	public void decodesBirdHouseStatesAndTiers()
+	{
+		assertDecoded(PatchType.BIRD_HOUSE, 0, "Empty", PatchState.EMPTY, 0, 1, 0);
+		assertDecoded(PatchType.BIRD_HOUSE, 1, "Bird house", PatchState.EMPTY, 0, 1, 0);
+		assertDecoded(PatchType.BIRD_HOUSE, 3, "Bird house", PatchState.GROWING, 0, 1, 0);
+		assertDecoded(PatchType.BIRD_HOUSE, 19, "Yew bird house", PatchState.EMPTY, 0, 1, 0);
+		assertDecoded(PatchType.BIRD_HOUSE, 21, "Yew bird house", PatchState.GROWING, 0, 1, 0);
+		assertDecoded(PatchType.BIRD_HOUSE, 27, "Redwood bird house", PatchState.GROWING, 0, 1, 0);
+		assertNull(PatchStateDecoder.decode(PatchType.BIRD_HOUSE, 28));
 	}
 
 	private static void assertDecoded(

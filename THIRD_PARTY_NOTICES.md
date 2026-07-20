@@ -1,6 +1,6 @@
 # Third-party notices
 
-PatchMaster reads the storage format and farming-varbit state mappings used
+PatchMaster reads the storage formats and farming-varbit/birdhouse-varp state mappings used
 by RuneLite's built-in Time Tracking plugin. Those mappings are derived from
 the RuneLite project, which is distributed under the BSD 2-Clause license.
 
@@ -10,6 +10,10 @@ Relevant upstream files:
 - `runelite-client/.../plugins/timetracking/farming/FarmingWorld.java`
 - `runelite-client/.../plugins/timetracking/farming/PatchImplementation.java`
 - `runelite-client/.../plugins/timetracking/farming/Produce.java`
+- `runelite-client/.../plugins/timetracking/hunter/BirdHouse.java`
+- `runelite-client/.../plugins/timetracking/hunter/BirdHouseSpace.java`
+- `runelite-client/.../plugins/timetracking/hunter/BirdHouseState.java`
+- `runelite-client/.../plugins/timetracking/hunter/BirdHouseTracker.java`
 - `runelite-client/.../plugins/worldmap/FarmingPatchLocation.java`
 
 RuneLite copyright notices remain with the RuneLite contributors. See

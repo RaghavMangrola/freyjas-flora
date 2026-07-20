@@ -61,12 +61,24 @@ public class RunPlannerTest
 			snapshot(FarmPatch.TREE_AUBURNVALE, PatchState.EMPTY, 0L),
 			snapshot(FarmPatch.FRUIT_TREE_BRIMHAVEN, PatchState.EMPTY, 0L),
 			snapshot(FarmPatch.HARDWOOD_ANGLERS_RETREAT, PatchState.EMPTY, 0L),
-			snapshot(FarmPatch.CALQUAT_GREAT_CONCH, PatchState.EMPTY, 0L),
+			 snapshot(FarmPatch.CALQUAT_GREAT_CONCH, PatchState.EMPTY, 0L),
 			snapshot(FarmPatch.SEAWEED_NORTH, PatchState.EMPTY, 0L),
+			snapshot(FarmPatch.HOPS_ALDARIN, PatchState.EMPTY, 0L),
 			snapshot(FarmPatch.CORAL_EAST, PatchState.EMPTY, 0L));
 
 		assertEquals(
 			FarmPatch.CORAL_EAST,
+			planner.next(snapshots, null, 1000L, true, false, SeedInventory.empty(), true).get().getPatch());
+	}
+
+	@Test
+	public void doesNotTreatAnEmptyBirdHouseAsASeededFarmingPatch()
+	{
+		List<PatchSnapshot> snapshots = Arrays.asList(
+			snapshot(FarmPatch.BIRD_HOUSE_VALLEY_NORTH, PatchState.EMPTY, 0L));
+
+		assertEquals(
+			FarmPatch.BIRD_HOUSE_VALLEY_NORTH,
 			planner.next(snapshots, null, 1000L, true, false, SeedInventory.empty(), true).get().getPatch());
 	}
 

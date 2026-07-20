@@ -970,7 +970,9 @@ final class FarmRunHelperPanel extends PluginPanel
 			case DEAD:
 				return prediction.getCropName() + " · Dead";
 			case EMPTY:
-				return "Empty";
+				return patch.getType() == PatchType.BIRD_HOUSE && !"Empty".equals(prediction.getCropName())
+					? prediction.getCropName() + " · Needs seed"
+					: "Empty";
 			default:
 				return "Visit once to sync";
 		}

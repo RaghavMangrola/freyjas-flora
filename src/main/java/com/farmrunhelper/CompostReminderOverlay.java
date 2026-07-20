@@ -35,9 +35,11 @@ final class CompostReminderOverlay extends Overlay
 	private final TimeTrackingService timeTrackingService;
 	private final ModelOutlineRenderer modelOutlineRenderer;
 	private final BufferedImage magicSecateursIcon;
+	private final BufferedImage coinsIcon;
 	private final BufferedImage spadeIcon;
 	private final BufferedImage plantCureIcon;
 	private final BufferedImage herbSeedIcon;
+	private final BufferedImage hopsSeedIcon;
 	private final BufferedImage treeSaplingIcon;
 	private final BufferedImage fruitTreeSaplingIcon;
 	private final BufferedImage hardwoodSaplingIcon;
@@ -59,9 +61,11 @@ final class CompostReminderOverlay extends Overlay
 		this.timeTrackingService = timeTrackingService;
 		this.modelOutlineRenderer = modelOutlineRenderer;
 		this.magicSecateursIcon = itemManager.getImage(ItemID.FAIRY_ENCHANTED_SECATEURS);
+		this.coinsIcon = itemManager.getImage(ItemID.COINS);
 		this.spadeIcon = itemManager.getImage(ItemID.SPADE);
 		this.plantCureIcon = itemManager.getImage(ItemID.PLANT_CURE);
 		this.herbSeedIcon = itemManager.getImage(ItemID.GUAM_SEED);
+		this.hopsSeedIcon = itemManager.getImage(ItemID.BARLEY_SEED);
 		this.treeSaplingIcon = itemManager.getImage(ItemID.PLANTPOT_OAK_SAPLING);
 		this.fruitTreeSaplingIcon = itemManager.getImage(ItemID.PLANTPOT_APPLE_SAPLING);
 		this.hardwoodSaplingIcon = itemManager.getImage(ItemID.PLANTPOT_TEAK_SAPLING);
@@ -210,12 +214,15 @@ final class CompostReminderOverlay extends Overlay
 		switch (highlight)
 		{
 			case READY:
-				return magicSecateursIcon;
+				return patch.getType().usesTreeReadyAction() && config.treeReadyAction() == TreeReadyAction.COINS
+					? coinsIcon
+					: magicSecateursIcon;
 			case DEAD:
 				return spadeIcon;
 			case EMPTY:
 				switch (patch.getType())
 				{
+					case HOPS: return hopsSeedIcon;
 					case TREE: return treeSaplingIcon;
 					case FRUIT_TREE: return fruitTreeSaplingIcon;
 					case HARDWOOD_TREE: return hardwoodSaplingIcon;

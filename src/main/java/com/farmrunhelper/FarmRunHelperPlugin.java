@@ -34,8 +34,8 @@ import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
 	name = "PatchMaster",
-	description = "Tracks farming patches and sends visual destinations to Shortest Path",
-	tags = {"farming", "herb", "tree", "fruit", "hardwood", "calquat", "coral", "seaweed", "timer", "route", "path"},
+	description = "Tracks farming patches and birdhouses and sends visual destinations to Shortest Path",
+	tags = {"farming", "herb", "hops", "tree", "fruit", "hardwood", "calquat", "coral", "seaweed", "birdhouse", "hunter", "timer", "route", "path"},
 	enabledByDefault = false
 )
 @PluginDependency(TimeTrackingPlugin.class)

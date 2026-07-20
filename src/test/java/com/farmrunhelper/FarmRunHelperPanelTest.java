@@ -67,11 +67,13 @@ public class FarmRunHelperPanelTest
 		List<PatchType> initialOrder = Arrays.asList(
 			PatchType.HERB,
 			PatchType.SEAWEED,
+			PatchType.HOPS,
 			PatchType.TREE,
 			PatchType.FRUIT_TREE,
 			PatchType.HARDWOOD_TREE,
 			PatchType.CALQUAT,
-			PatchType.CORAL);
+			PatchType.CORAL,
+			PatchType.BIRD_HOUSE);
 		panel.update(
 			Arrays.asList(
 				snapshot(FarmPatch.SEAWEED_NORTH),

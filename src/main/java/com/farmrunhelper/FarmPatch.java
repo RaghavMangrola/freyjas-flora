@@ -2,6 +2,7 @@ package com.farmrunhelper;
 
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.gameval.VarbitID;
+import net.runelite.api.gameval.VarPlayerID;
 
 enum FarmPatch
 {
@@ -25,6 +26,17 @@ enum FarmPatch
 		new WorldPoint(2828, 3696, 0)),
 	WEISS("Weiss", PatchType.HERB, 11325, VarbitID.FARMING_TRANSMIT_A,
 		new WorldPoint(2847, 3933, 0)),
+
+	HOPS_ALDARIN("Aldarin", PatchType.HOPS, 5421, VarbitID.FARMING_TRANSMIT_A,
+		new WorldPoint(1365, 2939, 0)),
+	HOPS_ENTRANA("Entrana", PatchType.HOPS, 11060, VarbitID.FARMING_TRANSMIT_A,
+		new WorldPoint(2811, 3337, 0)),
+	HOPS_LUMBRIDGE("Lumbridge", PatchType.HOPS, 12851, VarbitID.FARMING_TRANSMIT_A,
+		new WorldPoint(3229, 3315, 0)),
+	HOPS_SEERS_VILLAGE("Seers' Village", PatchType.HOPS, 10551, VarbitID.FARMING_TRANSMIT_A,
+		new WorldPoint(2667, 3526, 0)),
+	HOPS_YANILLE("Yanille", PatchType.HOPS, 10288, VarbitID.FARMING_TRANSMIT_A,
+		new WorldPoint(2576, 3105, 0)),
 
 	TREE_AUBURNVALE("Auburnvale", PatchType.TREE, 5427, VarbitID.FARMING_TRANSMIT_A,
 		new WorldPoint(1367, 3322, 0)),
@@ -86,12 +98,23 @@ enum FarmPatch
 		"Take the Mushroom Forest rowboat out to sea, then dive; the route continues underwater."),
 	SEAWEED_SOUTH("Fossil Island — South", PatchType.SEAWEED, 15008, VarbitID.FARMING_TRANSMIT_B,
 		new WorldPoint(3730, 10271, 0), new WorldPoint(3734, 3893, 0), 15008,
-		"Take the Mushroom Forest rowboat out to sea, then dive; the route continues underwater.");
+		"Take the Mushroom Forest rowboat out to sea, then dive; the route continues underwater."),
+
+	// Keep the birdhouses in the usual run order: Verdant Valley, then Mushroom Meadow.
+	BIRD_HOUSE_VALLEY_NORTH("Verdant Valley — Northeast", PatchType.BIRD_HOUSE,
+		birdHouseKey(VarPlayerID.BIRDHOUSE_TRANSMIT_C), new WorldPoint(3768, 3761, 0)),
+	BIRD_HOUSE_VALLEY_SOUTH("Verdant Valley — Southwest", PatchType.BIRD_HOUSE,
+		birdHouseKey(VarPlayerID.BIRDHOUSE_TRANSMIT_D), new WorldPoint(3763, 3755, 0)),
+	BIRD_HOUSE_MEADOW_NORTH("Mushroom Meadow — North", PatchType.BIRD_HOUSE,
+		birdHouseKey(VarPlayerID.BIRDHOUSE_TRANSMIT_A), new WorldPoint(3677, 3882, 0)),
+	BIRD_HOUSE_MEADOW_SOUTH("Mushroom Meadow — South", PatchType.BIRD_HOUSE,
+		birdHouseKey(VarPlayerID.BIRDHOUSE_TRANSMIT_B), new WorldPoint(3678, 3815, 0));
 
 	private final String displayName;
 	private final PatchType type;
 	private final int timeTrackingRegionId;
 	private final int varbitId;
+	private final String timeTrackingKey;
 	private final WorldPoint patchPoint;
 	private final WorldPoint accessPoint;
 	private final int interiorRegionId;
@@ -100,6 +123,19 @@ enum FarmPatch
 	FarmPatch(String displayName, PatchType type, int timeTrackingRegionId, int varbitId, WorldPoint patchPoint)
 	{
 		this(displayName, type, timeTrackingRegionId, varbitId, patchPoint, null, -1, null);
+	}
+
+	FarmPatch(String displayName, PatchType type, String timeTrackingKey, WorldPoint patchPoint)
+	{
+		this.displayName = displayName;
+		this.type = type;
+		this.timeTrackingRegionId = -1;
+		this.varbitId = -1;
+		this.timeTrackingKey = timeTrackingKey;
+		this.patchPoint = patchPoint;
+		this.accessPoint = null;
+		this.interiorRegionId = -1;
+		this.accessInstruction = null;
 	}
 
 	FarmPatch(
@@ -116,6 +152,7 @@ enum FarmPatch
 		this.type = type;
 		this.timeTrackingRegionId = timeTrackingRegionId;
 		this.varbitId = varbitId;
+		this.timeTrackingKey = timeTrackingRegionId + "." + varbitId;
 		this.patchPoint = patchPoint;
 		this.accessPoint = accessPoint;
 		this.interiorRegionId = interiorRegionId;
@@ -134,7 +171,7 @@ enum FarmPatch
 
 	String getTimeTrackingKey()
 	{
-		return timeTrackingRegionId + "." + varbitId;
+		return timeTrackingKey;
 	}
 
 	int getTimeTrackingRegionId()
@@ -149,12 +186,12 @@ enum FarmPatch
 
 	boolean supportsCompostReminder()
 	{
-		return type == PatchType.HERB || type == PatchType.SEAWEED;
+		return type.supportsCompostReminder();
 	}
 
 	boolean matchesSceneObject(int objectVarbitId, WorldPoint objectLocation)
 	{
-		if (varbitId != objectVarbitId || objectLocation == null)
+		if (varbitId < 0 || varbitId != objectVarbitId || objectLocation == null)
 		{
 			return false;
 		}
@@ -178,5 +215,10 @@ enum FarmPatch
 			return accessInstruction;
 		}
 		return null;
+	}
+
+	private static String birdHouseKey(int varpId)
+	{
+		return "birdhouse." + varpId;
 	}
 }

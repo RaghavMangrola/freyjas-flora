@@ -10,6 +10,11 @@ enum PatchHighlight
 
 	static PatchHighlight forPatch(FarmPatch patch, PatchState state, boolean hasRecordedCompost)
 	{
+		if (!patch.getType().supportsSceneHighlights())
+		{
+			return null;
+		}
+
 		switch (state)
 		{
 			case READY:

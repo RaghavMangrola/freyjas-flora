@@ -21,6 +21,10 @@ public class PatchCropIconTest
 			PatchCropIcon.itemIdFor(PatchType.CORAL, "Umbral"));
 		assertEquals(ItemID.GIANT_SEAWEED,
 			PatchCropIcon.itemIdFor(PatchType.SEAWEED, "Seaweed"));
+		assertEquals(ItemID.YANILLIAN_HOPS,
+			PatchCropIcon.itemIdFor(PatchType.HOPS, "Yanillian"));
+		assertEquals(ItemID.BIRDHOUSE_YEW,
+			PatchCropIcon.itemIdFor(PatchType.BIRD_HOUSE, "Yew bird house"));
 	}
 
 	@Test
@@ -29,5 +33,7 @@ public class PatchCropIconTest
 		assertEquals(ItemID.UNIDENTIFIED_GUAM, PatchCropIcon.itemIdFor(PatchType.HERB, "Unknown"));
 		assertEquals(ItemID.OAK_LOGS, PatchCropIcon.itemIdFor(PatchType.TREE, "Empty"));
 		assertEquals(ItemID.CORAL_ELKHORN, PatchCropIcon.itemIdFor(PatchType.CORAL, "Empty"));
+		assertEquals(ItemID.BARLEY, PatchCropIcon.itemIdFor(PatchType.HOPS, "Empty"));
+		assertEquals(ItemID.BIRDHOUSE_NORMAL, PatchCropIcon.itemIdFor(PatchType.BIRD_HOUSE, "Unknown"));
 	}
 }

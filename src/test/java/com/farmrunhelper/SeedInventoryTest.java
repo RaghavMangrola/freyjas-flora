@@ -19,6 +19,11 @@ public class SeedInventoryTest
 		assertTrue(seeds.canPlant(PatchType.HARDWOOD_TREE));
 		assertTrue(seeds.canPlant(PatchType.CALQUAT));
 		assertTrue(seeds.canPlant(PatchType.SEAWEED));
+		assertTrue(SeedInventory.builder()
+			.markObserved(SeedInventory.Location.INVENTORY, 0L)
+			.add(SeedInventory.Location.INVENTORY, PatchType.HOPS, true, "Yanillian seed", 1)
+			.build()
+			.canPlant(PatchType.HOPS));
 	}
 
 	@Test
@@ -31,7 +36,9 @@ public class SeedInventoryTest
 		assertFalse(seeds.canPlant(PatchType.HARDWOOD_TREE));
 		assertFalse(seeds.canPlant(PatchType.CALQUAT));
 		assertFalse(seeds.canPlant(PatchType.SEAWEED));
+		assertFalse(seeds.canPlant(PatchType.HOPS));
 		assertTrue(seeds.canPlant(PatchType.CORAL));
+		assertTrue(seeds.canPlant(PatchType.BIRD_HOUSE));
 	}
 
 	@Test

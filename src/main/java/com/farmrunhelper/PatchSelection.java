@@ -25,6 +25,11 @@ final class PatchSelection
 			case MORYTANIA: return config.enableMorytania();
 			case TROLL_STRONGHOLD: return config.enableTrollStronghold();
 			case WEISS: return config.enableWeiss();
+			case HOPS_ALDARIN: return config.enableAldarinHops();
+			case HOPS_ENTRANA: return config.enableEntranaHops();
+			case HOPS_LUMBRIDGE: return config.enableLumbridgeHops();
+			case HOPS_SEERS_VILLAGE: return config.enableSeersVillageHops();
+			case HOPS_YANILLE: return config.enableYanilleHops();
 			case TREE_AUBURNVALE: return config.enableAuburnvaleTree();
 			case TREE_FALADOR: return config.enableFaladorTree();
 			case TREE_FARMING_GUILD: return config.enableFarmingGuildTree();
@@ -51,6 +56,10 @@ final class PatchSelection
 			case CORAL_WEST: return config.enableCoralWest();
 			case SEAWEED_NORTH: return config.enableSeaweedNorth();
 			case SEAWEED_SOUTH: return config.enableSeaweedSouth();
+			case BIRD_HOUSE_VALLEY_NORTH: return config.enableValleyNorthBirdHouse();
+			case BIRD_HOUSE_VALLEY_SOUTH: return config.enableValleySouthBirdHouse();
+			case BIRD_HOUSE_MEADOW_NORTH: return config.enableMeadowNorthBirdHouse();
+			case BIRD_HOUSE_MEADOW_SOUTH: return config.enableMeadowSouthBirdHouse();
 			default: return false;
 		}
 	}
@@ -60,12 +69,14 @@ final class PatchSelection
 		switch (type)
 		{
 			case HERB: return config.showHerbs();
+			case HOPS: return config.showHops();
 			case TREE: return config.showTrees();
 			case FRUIT_TREE: return config.showFruitTrees();
 			case HARDWOOD_TREE: return config.showHardwoodTrees();
 			case CALQUAT: return config.showCalquatTrees();
 			case CORAL: return config.showCoral();
 			case SEAWEED: return config.showSeaweed();
+			case BIRD_HOUSE: return config.showBirdHouses();
 			default: return false;
 		}
 	}

@@ -280,6 +280,7 @@ final class SeedInventory
 		switch (type)
 		{
 			case HERB:
+			case HOPS:
 			case TREE:
 			case FRUIT_TREE:
 			case HARDWOOD_TREE:
