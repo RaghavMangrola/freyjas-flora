@@ -99,6 +99,16 @@ public class FarmPatchTest
 	}
 
 	@Test
+	public void routesHopsToWalkableTilesBesideTheirCropPatches()
+	{
+		assertEquals(new WorldPoint(1367, 2939, 0), FarmPatch.HOPS_ALDARIN.getNavigationTarget(null));
+		assertEquals(new WorldPoint(2813, 3337, 0), FarmPatch.HOPS_ENTRANA.getNavigationTarget(null));
+		assertEquals(new WorldPoint(3232, 3315, 0), FarmPatch.HOPS_LUMBRIDGE.getNavigationTarget(null));
+		assertEquals(new WorldPoint(2670, 3526, 0), FarmPatch.HOPS_SEERS_VILLAGE.getNavigationTarget(null));
+		assertEquals(new WorldPoint(2578, 3105, 0), FarmPatch.HOPS_YANILLE.getNavigationTarget(null));
+	}
+
+	@Test
 	public void matchesSceneObjectsByVarbitAndActualPatchRegion()
 	{
 		assertTrue(FarmPatch.ARDOUGNE.matchesSceneObject(

@@ -2,6 +2,7 @@ package com.farmrunhelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -165,6 +166,17 @@ public class FarmRunHelperConfigTest
 		assertEquals(PatchMasterTheme.EMPTY, config.emptyPatchColor());
 		assertEquals(PatchMasterTheme.DEAD, config.deadPatchColor());
 		assertEquals(PatchMasterTheme.DISEASED, config.diseasedPatchColor());
+		assertEquals(TreeReadyAction.MAGIC_SECATEURS, config.treeReadyAction());
+	}
+
+	@Test
+	public void exposesTreeReadyActionToTheConfigProxy()
+	{
+		FarmRunHelperConfig config = (FarmRunHelperConfig) Proxy.newProxyInstance(
+			FarmRunHelperConfig.class.getClassLoader(),
+			new Class<?>[]{FarmRunHelperConfig.class},
+			(proxy, method, arguments) -> TreeReadyAction.MAGIC_SECATEURS);
+
 		assertEquals(TreeReadyAction.MAGIC_SECATEURS, config.treeReadyAction());
 	}
 }

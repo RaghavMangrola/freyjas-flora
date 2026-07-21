@@ -28,15 +28,15 @@ enum FarmPatch
 		new WorldPoint(2847, 3933, 0)),
 
 	HOPS_ALDARIN("Aldarin", PatchType.HOPS, 5421, VarbitID.FARMING_TRANSMIT_A,
-		new WorldPoint(1365, 2939, 0)),
+		new WorldPoint(1365, 2939, 0), new WorldPoint(1367, 2939, 0)),
 	HOPS_ENTRANA("Entrana", PatchType.HOPS, 11060, VarbitID.FARMING_TRANSMIT_A,
-		new WorldPoint(2811, 3337, 0)),
+		new WorldPoint(2811, 3337, 0), new WorldPoint(2813, 3337, 0)),
 	HOPS_LUMBRIDGE("Lumbridge", PatchType.HOPS, 12851, VarbitID.FARMING_TRANSMIT_A,
-		new WorldPoint(3229, 3315, 0)),
+		new WorldPoint(3229, 3315, 0), new WorldPoint(3232, 3315, 0)),
 	HOPS_SEERS_VILLAGE("Seers' Village", PatchType.HOPS, 10551, VarbitID.FARMING_TRANSMIT_A,
-		new WorldPoint(2667, 3526, 0)),
+		new WorldPoint(2667, 3526, 0), new WorldPoint(2670, 3526, 0)),
 	HOPS_YANILLE("Yanille", PatchType.HOPS, 10288, VarbitID.FARMING_TRANSMIT_A,
-		new WorldPoint(2576, 3105, 0)),
+		new WorldPoint(2576, 3105, 0), new WorldPoint(2578, 3105, 0)),
 
 	TREE_AUBURNVALE("Auburnvale", PatchType.TREE, 5427, VarbitID.FARMING_TRANSMIT_A,
 		new WorldPoint(1367, 3322, 0)),
@@ -116,16 +116,33 @@ enum FarmPatch
 	private final int varbitId;
 	private final String timeTrackingKey;
 	private final WorldPoint patchPoint;
+	private final WorldPoint navigationPoint;
 	private final WorldPoint accessPoint;
 	private final int interiorRegionId;
 	private final String accessInstruction;
 
 	FarmPatch(String displayName, PatchType type, int timeTrackingRegionId, int varbitId, WorldPoint patchPoint)
 	{
-		this(displayName, type, timeTrackingRegionId, varbitId, patchPoint, null, -1, null);
+		this(displayName, type, timeTrackingRegionId, varbitId, patchPoint, patchPoint, null, -1, null);
+	}
+
+	FarmPatch(
+		String displayName,
+		PatchType type,
+		int timeTrackingRegionId,
+		int varbitId,
+		WorldPoint patchPoint,
+		WorldPoint navigationPoint)
+	{
+		this(displayName, type, timeTrackingRegionId, varbitId, patchPoint, navigationPoint, null, -1, null);
 	}
 
 	FarmPatch(String displayName, PatchType type, String timeTrackingKey, WorldPoint patchPoint)
+	{
+		this(displayName, type, timeTrackingKey, patchPoint, patchPoint);
+	}
+
+	FarmPatch(String displayName, PatchType type, String timeTrackingKey, WorldPoint patchPoint, WorldPoint navigationPoint)
 	{
 		this.displayName = displayName;
 		this.type = type;
@@ -133,6 +150,7 @@ enum FarmPatch
 		this.varbitId = -1;
 		this.timeTrackingKey = timeTrackingKey;
 		this.patchPoint = patchPoint;
+		this.navigationPoint = navigationPoint;
 		this.accessPoint = null;
 		this.interiorRegionId = -1;
 		this.accessInstruction = null;
@@ -148,12 +166,28 @@ enum FarmPatch
 		int interiorRegionId,
 		String accessInstruction)
 	{
+		this(displayName, type, timeTrackingRegionId, varbitId, patchPoint, patchPoint,
+			accessPoint, interiorRegionId, accessInstruction);
+	}
+
+	FarmPatch(
+		String displayName,
+		PatchType type,
+		int timeTrackingRegionId,
+		int varbitId,
+		WorldPoint patchPoint,
+		WorldPoint navigationPoint,
+		WorldPoint accessPoint,
+		int interiorRegionId,
+		String accessInstruction)
+	{
 		this.displayName = displayName;
 		this.type = type;
 		this.timeTrackingRegionId = timeTrackingRegionId;
 		this.varbitId = varbitId;
 		this.timeTrackingKey = timeTrackingRegionId + "." + varbitId;
 		this.patchPoint = patchPoint;
+		this.navigationPoint = navigationPoint;
 		this.accessPoint = accessPoint;
 		this.interiorRegionId = interiorRegionId;
 		this.accessInstruction = accessInstruction;
@@ -205,7 +239,7 @@ enum FarmPatch
 		{
 			return accessPoint;
 		}
-		return patchPoint;
+		return navigationPoint;
 	}
 
 	String getAccessInstruction(WorldPoint playerLocation)

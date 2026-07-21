@@ -1,6 +1,6 @@
 package com.farmrunhelper;
 
-enum TreeReadyAction
+public enum TreeReadyAction
 {
 	MAGIC_SECATEURS,
 	COINS
