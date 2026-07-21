@@ -85,29 +85,6 @@ narrower: it is a Time Tracking view and Shortest Path controller for the
 supported farming-run and birdhouse families. It does not duplicate inventory loadouts,
 interaction highlighting, profit tracking, or custom teleport logic.
 
-## Rule-compliance boundary
-
-The plugin is intentionally limited to information and visual navigation:
-
-- It does not click, move the mouse, press keys, invoke menu actions, swap menu
-  entries, select teleports, or interact with game objects or widgets.
-- It does not automate farming or movement. Every game action remains a direct
-  player action.
-- It does not use reflection, JNI, subprocesses, external network services, or
-  runtime downloads.
-- It reads RuneLite configuration and posts the public `shortestpath/path` or
-  `shortestpath/clear` `PluginMessage`; Shortest Path owns all route rendering.
-- Saved seed stock stays in RuneLite's profile-scoped configuration; PatchMaster
-  does not read another plugin's files or send the counts anywhere.
-- It is Java 11 source with no third-party runtime dependencies.
-
-These boundaries follow the [RuneLite Plugin Hub review
-criteria](https://github.com/runelite/plugin-hub), RuneLite's [rejected-feature
-guidance](https://github.com/runelite/runelite/wiki/Rejected-or-Rolled-Back-Features),
-and Jagex's [macro and client feature
-rules](https://legal.jagex.com/docs/rules/macro-and-client-features-not-permitted).
-Plugin Hub review is still the final authority for distribution.
-
 ## Development
 
 Requirements: JDK 11 or newer.
