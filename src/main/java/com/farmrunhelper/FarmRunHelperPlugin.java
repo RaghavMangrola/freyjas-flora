@@ -80,6 +80,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 	@Inject
 	private SeedInventoryService seedInventoryService;
 
+	private final RunPlanner runPlanner = new RunPlanner();
 	private final FarmRunProgress runProgress = new FarmRunProgress();
 	private NavigationButton navigationButton;
 	private FarmPatch currentPatch;
@@ -259,7 +260,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		clientThread.invokeLater(() ->
 		{
 			runActive = true;
-			runProgress.start(getVisibleSnapshots());
+			runProgress.start(getActionableSnapshots());
 			routeCurrentPatch();
 		});
 	}
@@ -270,7 +271,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		clientThread.invokeLater(() ->
 		{
 			runActive = true;
-			runProgress.advance(getVisibleSnapshots());
+			runProgress.advance(getActionableSnapshots());
 			routeCurrentPatch();
 		});
 	}
@@ -296,7 +297,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 	{
 		clientThread.invokeLater(() ->
 		{
-			if (!runProgress.toggleDone(patch, getVisibleSnapshots()))
+			if (!runProgress.toggleDone(patch, getActionableSnapshots()))
 			{
 				return;
 			}
@@ -333,7 +334,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 
 	private void routeNextPatch()
 	{
-		runProgress.advance(getVisibleSnapshots());
+		runProgress.advance(getActionableSnapshots());
 		routeCurrentPatch();
 	}
 
@@ -345,6 +346,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 			currentPatch = null;
 			currentPatchState = null;
 			currentPatchReplanted = false;
+			runActive = false;
 			refreshPanel();
 			return;
 		}
@@ -438,6 +440,27 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 				timeTrackingService.getRecordedCompost(patch)));
 		}
 		return snapshots;
+	}
+
+	private List<PatchSnapshot> getActionableSnapshots()
+	{
+		long now = Instant.now().getEpochSecond();
+		SeedInventory seedInventory = seedInventoryService.getInventory();
+		List<PatchSnapshot> actionableSnapshots = new ArrayList<>();
+		for (PatchSnapshot snapshot : getVisibleSnapshots())
+		{
+			if (runPlanner.isActionable(
+				snapshot,
+				now,
+				config.includeEmpty(),
+				config.includeUnknown(),
+				seedInventory,
+				config.skipEmptyWithoutSeed()))
+			{
+				actionableSnapshots.add(snapshot);
+			}
+		}
+		return actionableSnapshots;
 	}
 
 	private void normalizePatchTypeOrderConfiguration()

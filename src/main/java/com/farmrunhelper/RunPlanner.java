@@ -35,15 +35,26 @@ final class RunPlanner
 		for (int offset = 1; offset <= snapshots.size(); offset++)
 		{
 			PatchSnapshot snapshot = snapshots.get((afterIndex + offset) % snapshots.size());
-			PatchState state = snapshot.getPrediction().getEffectiveState(now);
-			if (state.isActionable(includeEmpty, includeUnknown)
-				&& !(skipEmptyWithoutSeed && state == PatchState.EMPTY
-				&& !seedInventory.canPlant(snapshot.getPatch().getType())))
+			if (isActionable(snapshot, now, includeEmpty, includeUnknown, seedInventory, skipEmptyWithoutSeed))
 			{
 				return Optional.of(snapshot);
 			}
 		}
 
 		return Optional.empty();
+	}
+
+	boolean isActionable(
+		PatchSnapshot snapshot,
+		long now,
+		boolean includeEmpty,
+		boolean includeUnknown,
+		SeedInventory seedInventory,
+		boolean skipEmptyWithoutSeed)
+	{
+		PatchState state = snapshot.getPrediction().getEffectiveState(now);
+		return state.isActionable(includeEmpty, includeUnknown)
+			&& !(skipEmptyWithoutSeed && state == PatchState.EMPTY
+			&& !seedInventory.canPlant(snapshot.getPatch().getType()));
 	}
 }
