@@ -398,11 +398,13 @@ final class FarmRunHelperPanel extends PluginPanel
 		handle.setFont(FontManager.getRunescapeBoldFont());
 		handle.setBorder(new EmptyBorder(0, 0, 0, 3));
 		installOrderDragSource(handle, type);
+		installOrderDragSource(row, type);
 		row.add(handle, BorderLayout.WEST);
 
 		JLabel name = new JLabel((index + 1) + ". " + type.getDisplayName());
 		name.setFont(FontManager.getRunescapeBoldFont());
 		name.setForeground(PatchMasterTheme.TEXT_PRIMARY);
+		installOrderDragSource(name, type);
 		row.add(name, BorderLayout.CENTER);
 
 		JPanel controls = new JPanel(new GridLayout(1, 2, 3, 0));
@@ -424,6 +426,7 @@ final class FarmRunHelperPanel extends PluginPanel
 		controls.add(up);
 		controls.add(down);
 		row.add(controls, BorderLayout.EAST);
+		installOrderDropTarget(row);
 		return row;
 	}
 
@@ -541,6 +544,21 @@ final class FarmRunHelperPanel extends PluginPanel
 				source.getTransferHandler().exportAsDrag(source, event, TransferHandler.MOVE);
 			}
 		});
+	}
+
+	private void installOrderDropTarget(JComponent component)
+	{
+		if (component.getTransferHandler() == null)
+		{
+			component.setTransferHandler(new PatchTypeTransferHandler(null));
+		}
+		for (Component child : component.getComponents())
+		{
+			if (child instanceof JComponent)
+			{
+				installOrderDropTarget((JComponent) child);
+			}
+		}
 	}
 
 	private int orderInsertionIndexAt(Point point)
