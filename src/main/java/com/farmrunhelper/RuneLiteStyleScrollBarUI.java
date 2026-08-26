@@ -7,7 +7,6 @@ import java.awt.Rectangle;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.plaf.basic.BasicScrollBarUI;
-import net.runelite.client.ui.ColorScheme;
 
 /**
  * Mirrors RuneLite's FlatLaf scrollbar defaults when the standalone dev runner
@@ -20,8 +19,8 @@ final class RuneLiteStyleScrollBarUI extends BasicScrollBarUI
 	@Override
 	protected void configureScrollBarColors()
 	{
-		trackColor = ColorScheme.SCROLL_TRACK_COLOR;
-		thumbColor = ColorScheme.MEDIUM_GRAY_COLOR;
+		trackColor = PatchMasterTheme.BACKGROUND;
+		thumbColor = PatchMasterTheme.INACTIVE;
 	}
 
 	@Override
@@ -51,7 +50,7 @@ final class RuneLiteStyleScrollBarUI extends BasicScrollBarUI
 	@Override
 	protected void paintTrack(Graphics graphics, JComponent component, Rectangle bounds)
 	{
-		graphics.setColor(ColorScheme.SCROLL_TRACK_COLOR);
+		graphics.setColor(PatchMasterTheme.BACKGROUND);
 		graphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 
@@ -63,7 +62,7 @@ final class RuneLiteStyleScrollBarUI extends BasicScrollBarUI
 			return;
 		}
 
-		graphics.setColor(ColorScheme.MEDIUM_GRAY_COLOR);
+		graphics.setColor(PatchMasterTheme.INACTIVE);
 		graphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 

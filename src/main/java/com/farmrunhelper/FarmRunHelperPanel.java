@@ -2,6 +2,7 @@ package com.farmrunhelper;
 
 import java.awt.BorderLayout;
 import java.awt.BasicStroke;
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -28,7 +29,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -48,7 +49,6 @@ import javax.swing.border.EmptyBorder;
 import net.runelite.api.Constants;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.timetracking.farming.CompostState;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.AsyncBufferedImage;
@@ -80,6 +80,8 @@ final class FarmRunHelperPanel extends PluginPanel
 
 		void onRouteTo(FarmPatch patch);
 
+		void onDoneToggled(FarmPatch patch);
+
 		void onPatchTypeOrderChanged(List<PatchType> order);
 	}
 
@@ -95,6 +97,7 @@ final class FarmRunHelperPanel extends PluginPanel
 	private final ItemManager itemManager;
 	private List<PatchSnapshot> latestSnapshots = Collections.emptyList();
 	private FarmPatch latestCurrentPatch;
+	private Set<FarmPatch> latestDonePatches = Collections.emptySet();
 	private long latestNow;
 	private SeedInventory latestSeedInventory = SeedInventory.empty();
 	private boolean editingOrder;
@@ -113,37 +116,42 @@ final class FarmRunHelperPanel extends PluginPanel
 		super(false);
 		this.itemManager = itemManager;
 		setLayout(new BorderLayout());
-		setBackground(ColorScheme.DARK_GRAY_COLOR);
+		setBackground(PatchMasterTheme.BACKGROUND);
 
 		header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-		header.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		header.setBackground(PatchMasterTheme.BACKGROUND);
 		header.setBorder(new EmptyBorder(
+			PluginPanel.BORDER_OFFSET + 2,
 			PluginPanel.BORDER_OFFSET,
-			PluginPanel.BORDER_OFFSET,
-			7,
+			9,
 			PluginPanel.BORDER_OFFSET));
 
 		JPanel brand = new JPanel(new BorderLayout(5, 0));
-		brand.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		brand.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
-		JLabel title = new JLabel("PatchMaster", new ImageIcon(FarmRunIcon.create()), SwingConstants.LEFT);
+		brand.setBackground(PatchMasterTheme.BACKGROUND);
+		brand.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+		JLabel title = new JLabel("Freyja’s Flora", new ImageIcon(FarmRunIcon.fallback()), SwingConstants.LEFT);
 		title.setFont(FontManager.getRunescapeBoldFont());
 		title.setForeground(PatchMasterTheme.BRAND);
 		title.setIconTextGap(6);
+		FarmRunIcon.loadFarmersShirt(itemManager, 16, icon -> SwingUtilities.invokeLater(() ->
+		{
+			title.setIcon(new ImageIcon(icon));
+			title.revalidate();
+			title.repaint();
+		}));
 		brand.add(title, BorderLayout.CENTER);
 		orderButton.setMargin(new Insets(2, 7, 2, 7));
+		styleButton(orderButton, PatchMasterTheme.CARD, PatchMasterTheme.TEXT_PRIMARY);
 		orderButton.setToolTipText("Change the patch-type order used by the panel and farm run");
 		orderButton.addActionListener(event -> setEditingOrder(!editingOrder));
 		brand.add(orderButton, BorderLayout.EAST);
 		header.add(brand);
 
 		JPanel primaryAction = new JPanel(new BorderLayout());
-		primaryAction.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		primaryAction.setBackground(PatchMasterTheme.BACKGROUND);
 		primaryAction.setBorder(new EmptyBorder(6, 0, 4, 0));
 		startButton.setToolTipText("Route to the first ready, empty, or unknown patch");
-		startButton.setForeground(Color.WHITE);
-		startButton.setBackground(new Color(57, 112, 64));
-		startButton.setFocusPainted(false);
+		styleButton(startButton, PatchMasterTheme.MOSS, PatchMasterTheme.TEXT_PRIMARY);
 		startButton.addActionListener(event ->
 		{
 			if (listener != null)
@@ -155,7 +163,7 @@ final class FarmRunHelperPanel extends PluginPanel
 		header.add(primaryAction);
 
 		JPanel secondaryActions = new JPanel(new GridLayout(1, 2, 4, 0));
-		secondaryActions.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		secondaryActions.setBackground(PatchMasterTheme.BACKGROUND);
 		nextButton.setToolTipText("Route to the next patch included in this run");
 		nextButton.addActionListener(event ->
 		{
@@ -176,13 +184,15 @@ final class FarmRunHelperPanel extends PluginPanel
 		Insets actionMargin = new Insets(2, 6, 2, 6);
 		nextButton.setMargin(actionMargin);
 		clear.setMargin(actionMargin);
+		styleButton(nextButton, PatchMasterTheme.CARD, PatchMasterTheme.TEXT_PRIMARY);
+		styleButton(clear, PatchMasterTheme.CARD, PatchMasterTheme.TEXT_PRIMARY);
 		secondaryActions.add(nextButton);
 		secondaryActions.add(clear);
 		secondaryActions.setMaximumSize(new Dimension(Integer.MAX_VALUE, secondaryActions.getPreferredSize().height));
 		header.add(secondaryActions);
 
 		patchList.setLayout(new BoxLayout(patchList, BoxLayout.Y_AXIS));
-		patchList.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		patchList.setBackground(PatchMasterTheme.BACKGROUND);
 		patchList.setBorder(new EmptyBorder(
 			0,
 			PluginPanel.BORDER_OFFSET,
@@ -190,7 +200,7 @@ final class FarmRunHelperPanel extends PluginPanel
 			PluginPanel.BORDER_OFFSET));
 		patchList.setTransferHandler(new PatchTypeTransferHandler(null));
 		JPanel patchListWrapper = new JPanel(new BorderLayout());
-		patchListWrapper.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		patchListWrapper.setBackground(PatchMasterTheme.BACKGROUND);
 		patchListWrapper.add(patchList, BorderLayout.NORTH);
 
 		JScrollPane patchScroller = new JScrollPane(patchListWrapper);
@@ -199,7 +209,7 @@ final class FarmRunHelperPanel extends PluginPanel
 		patchScroller.setViewportBorder(null);
 		patchScroller.getVerticalScrollBar().setUI(new RuneLiteStyleScrollBarUI());
 		patchScroller.getVerticalScrollBar().setUnitIncrement(16);
-		patchScroller.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		patchScroller.setBackground(PatchMasterTheme.BACKGROUND);
 
 		add(header, BorderLayout.NORTH);
 		add(patchScroller, BorderLayout.CENTER);
@@ -210,6 +220,14 @@ final class FarmRunHelperPanel extends PluginPanel
 		this.listener = listener;
 	}
 
+	private static void styleButton(JButton button, Color background, Color foreground)
+	{
+		button.setBackground(background);
+		button.setForeground(foreground);
+		button.setBorder(BorderFactory.createLineBorder(PatchMasterTheme.BUTTON_BORDER));
+		button.setFocusPainted(false);
+	}
+
 	void update(
 		List<PatchSnapshot> snapshots,
 		List<PatchType> orderedTypes,
@@ -217,10 +235,22 @@ final class FarmRunHelperPanel extends PluginPanel
 		long now,
 		SeedInventory seedInventory)
 	{
+		update(snapshots, orderedTypes, currentPatch, Collections.emptySet(), now, seedInventory);
+	}
+
+	void update(
+		List<PatchSnapshot> snapshots,
+		List<PatchType> orderedTypes,
+		FarmPatch currentPatch,
+		Set<FarmPatch> donePatches,
+		long now,
+		SeedInventory seedInventory)
+	{
 		SwingUtilities.invokeLater(() -> updateOnEdt(
 			snapshots,
 			orderedTypes,
 			currentPatch,
+			donePatches,
 			now,
 			seedInventory));
 	}
@@ -229,11 +259,15 @@ final class FarmRunHelperPanel extends PluginPanel
 		List<PatchSnapshot> snapshots,
 		List<PatchType> orderedTypes,
 		FarmPatch currentPatch,
+		Set<FarmPatch> donePatches,
 		long now,
 		SeedInventory seedInventory)
 	{
 		latestSnapshots = snapshots;
 		latestCurrentPatch = currentPatch;
+		latestDonePatches = donePatches.isEmpty()
+			? Collections.emptySet()
+			: java.util.EnumSet.copyOf(donePatches);
 		latestNow = now;
 		latestSeedInventory = seedInventory;
 		patchTypeOrder.clear();
@@ -294,7 +328,6 @@ final class FarmRunHelperPanel extends PluginPanel
 				{
 					patchList.add(patchRow(
 						snapshot,
-						Objects.equals(latestCurrentPatch, snapshot.getPatch()),
 						latestNow,
 						latestSeedInventory));
 				}
@@ -324,12 +357,12 @@ final class FarmRunHelperPanel extends PluginPanel
 		patchList.add(sectionHeader("Farm run order"));
 
 		JPanel helpContainer = new JPanel(new BorderLayout());
-		helpContainer.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		helpContainer.setBackground(PatchMasterTheme.BACKGROUND);
 		helpContainer.setBorder(new EmptyBorder(4, 7, 7, 7));
 		JLabel help = new JLabel(wrap(
 			"Drag patch types into the order you want, or use the arrow buttons.",
 			PANEL_TEXT_WIDTH));
-		help.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		help.setForeground(PatchMasterTheme.TEXT_SECONDARY);
 		help.setFont(FontManager.getRunescapeSmallFont());
 		help.setToolTipText("Change the farm run order");
 		helpContainer.add(help, BorderLayout.CENTER);
@@ -341,10 +374,11 @@ final class FarmRunHelperPanel extends PluginPanel
 		}
 
 		JPanel resetContainer = new JPanel(new BorderLayout());
-		resetContainer.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		resetContainer.setBackground(PatchMasterTheme.BACKGROUND);
 		resetContainer.setBorder(new EmptyBorder(6, 0, 0, 0));
 		JButton reset = new JButton("Reset order");
 		reset.setToolTipText("Restore the default patch-type order");
+		styleButton(reset, PatchMasterTheme.CARD, PatchMasterTheme.TEXT_PRIMARY);
 		reset.addActionListener(event -> resetPatchTypeOrder());
 		resetContainer.add(reset, BorderLayout.CENTER);
 		patchList.add(resetContainer);
@@ -353,14 +387,14 @@ final class FarmRunHelperPanel extends PluginPanel
 	private JPanel orderRow(PatchType type, int index)
 	{
 		JPanel row = new JPanel(new BorderLayout(5, 0));
-		row.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		row.setBackground(PatchMasterTheme.CARD);
 		row.putClientProperty(ORDER_TYPE_PROPERTY, type);
 		row.setBorder(BorderFactory.createCompoundBorder(
 			new EmptyBorder(0, 0, 3, 0),
 			new EmptyBorder(5, 7, 5, 5)));
 
 		JLabel handle = new JLabel("≡");
-		handle.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		handle.setForeground(PatchMasterTheme.TEXT_SECONDARY);
 		handle.setFont(FontManager.getRunescapeBoldFont());
 		handle.setBorder(new EmptyBorder(0, 0, 0, 3));
 		installOrderDragSource(handle, type);
@@ -368,6 +402,7 @@ final class FarmRunHelperPanel extends PluginPanel
 
 		JLabel name = new JLabel((index + 1) + ". " + type.getDisplayName());
 		name.setFont(FontManager.getRunescapeBoldFont());
+		name.setForeground(PatchMasterTheme.TEXT_PRIMARY);
 		row.add(name, BorderLayout.CENTER);
 
 		JPanel controls = new JPanel(new GridLayout(1, 2, 3, 0));
@@ -375,12 +410,14 @@ final class FarmRunHelperPanel extends PluginPanel
 		JButton up = new JButton("↑");
 		up.setPreferredSize(new Dimension(30, 26));
 		up.setMargin(new Insets(1, 4, 1, 4));
+		styleButton(up, PatchMasterTheme.CARD_HOVER, PatchMasterTheme.TEXT_PRIMARY);
 		up.setToolTipText("Move " + type.getDisplayName() + " earlier");
 		up.setEnabled(index > 0);
 		up.addActionListener(event -> movePatchType(type, -1));
 		JButton down = new JButton("↓");
 		down.setPreferredSize(new Dimension(30, 26));
 		down.setMargin(new Insets(1, 4, 1, 4));
+		styleButton(down, PatchMasterTheme.CARD_HOVER, PatchMasterTheme.TEXT_PRIMARY);
 		down.setToolTipText("Move " + type.getDisplayName() + " later");
 		down.setEnabled(index < patchTypeOrder.size() - 1);
 		down.addActionListener(event -> movePatchType(type, 1));
@@ -472,7 +509,11 @@ final class FarmRunHelperPanel extends PluginPanel
 			PatchPrediction prediction = snapshot.getPrediction();
 			PatchState state = prediction.getEffectiveState(latestNow);
 			key.append(snapshot.getPatch())
-				.append(':').append(Objects.equals(latestCurrentPatch, snapshot.getPatch()))
+				.append(':').append(PatchRowPresentation.forPatch(
+					snapshot.getPatch(),
+					latestCurrentPatch,
+					latestDonePatches,
+					state).getState())
 				.append(':').append(state)
 				.append(':').append(snapshot.getCompostState())
 				.append(':').append(statusText(
@@ -614,13 +655,14 @@ final class FarmRunHelperPanel extends PluginPanel
 		boolean collapsed = collapsedPatchTypes.contains(type);
 		boolean routing = latestCurrentPatch != null && latestCurrentPatch.getType() == type;
 		JPanel panel = new JPanel(new BorderLayout(6, 0));
-		panel.setBackground(routing ? ColorScheme.DARKER_GRAY_HOVER_COLOR : ColorScheme.DARK_GRAY_COLOR);
+		panel.setBackground(routing ? PatchMasterTheme.CARD_HOVER : PatchMasterTheme.BACKGROUND);
 		panel.setBorder(BorderFactory.createCompoundBorder(
-			new EmptyBorder(6, 0, 2, 0),
+			new EmptyBorder(10, 0, 3, 0),
 			new EmptyBorder(7, 7, 7, 7)));
 
 		JLabel label = new JLabel(type.getDisplayName());
 		label.setFont(FontManager.getRunescapeBoldFont());
+		label.setForeground(PatchMasterTheme.TEXT_PRIMARY);
 		panel.add(label, BorderLayout.CENTER);
 
 		JPanel summaryPanel = new JPanel(new BorderLayout(7, 0));
@@ -650,15 +692,15 @@ final class FarmRunHelperPanel extends PluginPanel
 			@Override
 			public void mouseEntered(MouseEvent event)
 			{
-				panel.setBackground(ColorScheme.DARKER_GRAY_HOVER_COLOR);
+				panel.setBackground(PatchMasterTheme.CARD_HOVER);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent event)
 			{
 				panel.setBackground(routing
-					? ColorScheme.DARKER_GRAY_HOVER_COLOR
-					: ColorScheme.DARK_GRAY_COLOR);
+					? PatchMasterTheme.CARD_HOVER
+					: PatchMasterTheme.BACKGROUND);
 			}
 		};
 		installSectionToggle(
@@ -697,7 +739,7 @@ final class FarmRunHelperPanel extends PluginPanel
 			case DEAD:
 				return PatchMasterTheme.DEAD;
 			default:
-				return ColorScheme.MEDIUM_GRAY_COLOR;
+				return PatchMasterTheme.INACTIVE;
 		}
 	}
 
@@ -732,7 +774,7 @@ final class FarmRunHelperPanel extends PluginPanel
 		{
 			Graphics2D graphics2D = (Graphics2D) graphics.create();
 			graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			graphics2D.setColor(ColorScheme.LIGHT_GRAY_COLOR);
+			graphics2D.setColor(PatchMasterTheme.TEXT_SECONDARY);
 			graphics2D.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			if (down)
 			{
@@ -763,28 +805,40 @@ final class FarmRunHelperPanel extends PluginPanel
 	private JPanel sectionHeader(String text)
 	{
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		panel.setBorder(new EmptyBorder(8, 2, 3, 2));
+		panel.setBackground(PatchMasterTheme.BACKGROUND);
+		panel.setBorder(new EmptyBorder(10, 2, 3, 2));
 		JLabel label = new JLabel(text);
 		label.setFont(FontManager.getRunescapeBoldFont());
+		label.setForeground(PatchMasterTheme.TEXT_PRIMARY);
 		panel.add(label, BorderLayout.CENTER);
 		return panel;
 	}
 
-	private JPanel patchRow(PatchSnapshot snapshot, boolean current, long now, SeedInventory seedInventory)
+	private JPanel patchRow(PatchSnapshot snapshot, long now, SeedInventory seedInventory)
 	{
 		PatchPrediction prediction = snapshot.getPrediction();
 		PatchState state = prediction.getEffectiveState(now);
+		PatchRowPresentation presentation = PatchRowPresentation.forPatch(
+			snapshot.getPatch(),
+			latestCurrentPatch,
+			latestDonePatches,
+			state);
 
-		JPanel row = new JPanel(new BorderLayout(5, 0));
-		row.setBackground(current ? ColorScheme.DARKER_GRAY_HOVER_COLOR : ColorScheme.DARKER_GRAY_COLOR);
+		PatchRowPanel row = new PatchRowPanel(presentation.getOpacity());
+		row.setLayout(new BorderLayout(5, 0));
+		row.setBackground(presentation.getBackgroundColor());
+		row.putClientProperty("patchmaster.rowState", presentation.getState());
+		row.putClientProperty("patchmaster.rowOpacity", presentation.getOpacity());
 		row.setBorder(BorderFactory.createCompoundBorder(
 			new EmptyBorder(0, 0, 3, 0),
 			new EmptyBorder(6, 0, 6, 5)));
 		JPanel accent = new JPanel();
-		accent.setBackground(current ? PatchMasterTheme.ROUTING : statusColor(state));
+		accent.setBackground(presentation.getAccentColor());
+		accent.putClientProperty("patchmaster.rowAccent", presentation.getState());
 		accent.setPreferredSize(new Dimension(4, 1));
-		accent.setToolTipText(current ? "Current destination" : stateLabel(state));
+		accent.setToolTipText(presentation.getState() == PatchRowPresentation.State.CURRENT
+			? "Current destination"
+			: presentation.getState() == PatchRowPresentation.State.DONE ? "Done" : "Upcoming");
 		row.add(accent, BorderLayout.WEST);
 
 		JPanel content = new JPanel(new BorderLayout(4, 0));
@@ -796,37 +850,106 @@ final class FarmRunHelperPanel extends PluginPanel
 		labels.setLayout(new BoxLayout(labels, BoxLayout.Y_AXIS));
 		JLabel name = new JLabel(wrap(snapshot.getPatch().getDisplayName(), PATCH_TEXT_WIDTH));
 		name.setFont(FontManager.getRunescapeBoldFont());
+		name.setForeground(PatchMasterTheme.TEXT_PRIMARY);
+		name.setAlignmentX(Component.LEFT_ALIGNMENT);
 		String statusText = statusText(snapshot.getPatch(), prediction, state, now, seedInventory);
-		JLabel status = new JLabel(wrap(statusText, PATCH_TEXT_WIDTH));
-		status.setFont(FontManager.getRunescapeSmallFont());
-		status.setForeground(statusColor(state));
-		status.setToolTipText(statusText);
 		labels.add(name);
-		labels.add(status);
+		labels.add(cropSubtitle(statusText, state));
 		content.add(labels, BorderLayout.CENTER);
 		row.add(content, BorderLayout.CENTER);
 
 		JPanel routeContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		routeContainer.setOpaque(false);
-		JButton route = new JButton(current ? "✓" : "→");
+		JButton route = new JButton(presentation.getActionGlyph());
 		route.setPreferredSize(new Dimension(34, 31));
-		route.setToolTipText(current
-			? "Refresh the current Shortest Path destination"
-			: "Show this destination with Shortest Path");
-		if (current)
+		route.setToolTipText(presentation.getActionTooltip());
+		route.putClientProperty("patchmaster.rowAction", presentation.getState());
+		if (presentation.getState() == PatchRowPresentation.State.CURRENT)
 		{
 			route.setForeground(PatchMasterTheme.ROUTING);
 		}
+		else
+		{
+			route.setForeground(PatchMasterTheme.TEXT_SECONDARY);
+		}
+		route.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseEntered(MouseEvent event)
+			{
+				if (!presentation.isDone())
+				{
+					route.setForeground(PatchMasterTheme.GOLD);
+				}
+			}
+
+			@Override
+			public void mouseExited(MouseEvent event)
+			{
+				route.setForeground(presentation.getState() == PatchRowPresentation.State.CURRENT
+					? PatchMasterTheme.GOLD
+					: PatchMasterTheme.TEXT_SECONDARY);
+			}
+		});
 		route.addActionListener(event ->
 		{
 			if (listener != null)
 			{
-				listener.onRouteTo(snapshot.getPatch());
+				if (presentation.isDone())
+				{
+					listener.onDoneToggled(snapshot.getPatch());
+				}
+				else
+				{
+					listener.onRouteTo(snapshot.getPatch());
+				}
 			}
 		});
 		routeContainer.add(route);
 		row.add(routeContainer, BorderLayout.EAST);
 		return row;
+	}
+
+	private static JLabel cropSubtitle(String cropText, PatchState state)
+	{
+		JLabel subtitle = new JLabel(wrap(cropText, PATCH_TEXT_WIDTH));
+		subtitle.setFont(FontManager.getRunescapeSmallFont());
+		subtitle.setForeground(state == PatchState.DEAD || state == PatchState.DISEASED
+			? PatchMasterTheme.DANGER
+			: PatchMasterTheme.SAGE);
+		subtitle.setToolTipText(cropText);
+		subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+		return subtitle;
+	}
+
+	private static final class PatchRowPanel extends JPanel
+	{
+		private final float contentOpacity;
+
+		private PatchRowPanel(float contentOpacity)
+		{
+			this.contentOpacity = contentOpacity;
+		}
+
+		@Override
+		public void paint(Graphics graphics)
+		{
+			if (contentOpacity >= 1.0f || getWidth() <= 0 || getHeight() <= 0)
+			{
+				super.paint(graphics);
+				return;
+			}
+
+			BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics2D imageGraphics = image.createGraphics();
+			super.paint(imageGraphics);
+			imageGraphics.dispose();
+
+			Graphics2D graphics2D = (Graphics2D) graphics.create();
+			graphics2D.setComposite(AlphaComposite.SrcOver.derive(contentOpacity));
+			graphics2D.drawImage(image, 0, 0, null);
+			graphics2D.dispose();
+		}
 	}
 
 	private JLayeredPane patchIcon(PatchSnapshot snapshot)

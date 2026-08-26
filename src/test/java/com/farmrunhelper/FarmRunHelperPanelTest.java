@@ -6,6 +6,7 @@ import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JButton;
@@ -16,7 +17,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.plugins.timetracking.farming.CompostState;
@@ -54,6 +54,11 @@ public class FarmRunHelperPanelTest
 
 			@Override
 			public void onRouteTo(FarmPatch patch)
+			{
+			}
+
+			@Override
+			public void onDoneToggled(FarmPatch patch)
 			{
 			}
 
@@ -130,9 +135,13 @@ public class FarmRunHelperPanelTest
 			seedStock);
 		flushEdt();
 
-		JLabel title = labelWithText(panel, "PatchMaster");
+		JLabel title = labelWithText(panel, "Freyja’s Flora");
 		assertNotNull(title);
 		assertEquals(PatchMasterTheme.BRAND, title.getForeground());
+		assertEquals(PatchMasterTheme.MOSS, buttonWithText(panel, "Start run").getBackground());
+		assertEquals(PatchMasterTheme.CARD, buttonWithText(panel, "Order").getBackground());
+		assertEquals(PatchMasterTheme.CARD, buttonWithText(panel, "Next patch").getBackground());
+		assertEquals(PatchMasterTheme.TEXT_PRIMARY, buttonWithText(panel, "Clear").getForeground());
 		JLabel herbHeader = labelWithText(panel, "Herbs");
 		assertNotNull(herbHeader);
 		JComponent patchList = (JComponent) herbHeader.getParent().getParent();
@@ -205,9 +214,9 @@ public class FarmRunHelperPanelTest
 		JLabel patchLabel = labelContaining(panel, "Ardougne");
 		assertNotNull(sectionLabel);
 		assertNotNull(patchLabel);
-		assertEquals(ColorScheme.DARK_GRAY_COLOR, sectionLabel.getParent().getBackground());
+		assertEquals(PatchMasterTheme.BACKGROUND, sectionLabel.getParent().getBackground());
 		assertEquals(
-			ColorScheme.DARKER_GRAY_COLOR,
+			PatchMasterTheme.CARD,
 			patchLabel.getParent().getParent().getParent().getBackground());
 	}
 
@@ -234,7 +243,7 @@ public class FarmRunHelperPanelTest
 		assertEquals(PatchMasterTheme.GROWING, tiles.get(1).getBackground());
 		assertEquals(PatchMasterTheme.DEAD, tiles.get(2).getBackground());
 		assertEquals(PatchMasterTheme.DEAD, tiles.get(3).getBackground());
-		assertEquals(ColorScheme.MEDIUM_GRAY_COLOR, tiles.get(4).getBackground());
+		assertEquals(PatchMasterTheme.INACTIVE, tiles.get(4).getBackground());
 
 		JLabel chevron = iconLabelWithTooltip(panel, "Collapse Herbs");
 		assertNotNull(chevron);
@@ -259,7 +268,7 @@ public class FarmRunHelperPanelTest
 				.build());
 		flushEdt();
 
-		JLabel title = labelWithText(panel, "PatchMaster");
+		JLabel title = labelWithText(panel, "Freyja’s Flora");
 		assertNotNull(title);
 		assertTrue(title.getPreferredSize().width <= 205);
 		assertTrue(buttonWithText(panel, "Start run").getPreferredSize().width <= 205);
@@ -309,7 +318,73 @@ public class FarmRunHelperPanelTest
 		JLabel cropStatus = labelContaining(panel, "Kwuarm");
 		assertNotNull(cropStatus);
 		assertFalse(cropStatus.getText().contains("Ready"));
-		assertEquals(PatchMasterTheme.READY, cropStatus.getForeground());
+		assertEquals(PatchMasterTheme.SAGE, cropStatus.getForeground());
+	}
+
+	@Test
+	public void rowStatesUseDistinctAffordancesAndDoneCanBeUncompleted() throws Exception
+	{
+		FarmRunHelperPanel panel = new FarmRunHelperPanel();
+		AtomicReference<FarmPatch> uncompleted = new AtomicReference<>();
+		panel.setListener(new FarmRunHelperPanel.Listener()
+		{
+			@Override
+			public void onStartRun()
+			{
+			}
+
+			@Override
+			public void onNextPatch()
+			{
+			}
+
+			@Override
+			public void onClearRoute()
+			{
+			}
+
+			@Override
+			public void onRouteTo(FarmPatch patch)
+			{
+			}
+
+			@Override
+			public void onDoneToggled(FarmPatch patch)
+			{
+				uncompleted.set(patch);
+			}
+
+			@Override
+			public void onPatchTypeOrderChanged(List<PatchType> order)
+			{
+			}
+		});
+
+		panel.update(
+			Arrays.asList(snapshot(FarmPatch.ARDOUGNE), snapshot(FarmPatch.CATHERBY)),
+			PatchTypeOrder.parse(PatchTypeOrder.DEFAULT_SERIALIZED),
+			FarmPatch.ARDOUGNE,
+			EnumSet.of(FarmPatch.CATHERBY),
+			1000L,
+			SeedInventory.empty());
+		flushEdt();
+
+		assertTrue(componentsWithClientProperty(panel, "patchmaster.rowState").stream()
+			.anyMatch(component -> PatchRowPresentation.State.CURRENT.equals(
+				component.getClientProperty("patchmaster.rowState"))));
+		assertTrue(componentsWithClientProperty(panel, "patchmaster.rowOpacity").stream()
+			.anyMatch(component -> Float.valueOf(0.5f).equals(
+				component.getClientProperty("patchmaster.rowOpacity"))));
+		assertEquals(PatchMasterTheme.SAGE, labelContaining(panel, "Crop").getForeground());
+		assertEquals(Component.LEFT_ALIGNMENT, labelContaining(panel, "Ardougne").getAlignmentX(), 0.0f);
+		assertNotNull(buttonWithText(panel, "➜"));
+		assertFalse(buttonWithText(panel, "➜").getText().equals("✓"));
+
+		JButton done = buttonWithTooltip(panel, "Mark this patch as not done");
+		assertNotNull(done);
+		assertEquals("✓", done.getText());
+		click(done);
+		assertEquals(FarmPatch.CATHERBY, uncompleted.get());
 	}
 
 	@Test

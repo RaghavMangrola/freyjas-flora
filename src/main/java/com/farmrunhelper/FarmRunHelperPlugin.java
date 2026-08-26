@@ -4,8 +4,8 @@ import com.google.inject.Provides;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import javax.inject.Inject;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -23,6 +23,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -33,7 +34,7 @@ import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
-	name = "PatchMaster",
+	name = "Freyja’s Flora",
 	description = "Tracks farming patches and birdhouses and sends visual destinations to Shortest Path",
 	tags = {"farming", "herb", "hops", "tree", "fruit", "hardwood", "calquat", "coral", "seaweed", "birdhouse", "hunter", "timer", "route", "path"},
 	enabledByDefault = false
@@ -51,6 +52,9 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 
 	@Inject
 	private ClientToolbar clientToolbar;
+
+	@Inject
+	private ItemManager itemManager;
 
 	@Inject
 	private ConfigManager configManager;
@@ -76,13 +80,12 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 	@Inject
 	private SeedInventoryService seedInventoryService;
 
-	private final RunPlanner runPlanner = new RunPlanner();
+	private final FarmRunProgress runProgress = new FarmRunProgress();
 	private NavigationButton navigationButton;
 	private FarmPatch currentPatch;
 	private PatchState currentPatchState;
 	private boolean currentPatchReplanted;
 	private WorldPoint lastNavigationTarget;
-	private FarmPatch lastRoutedPatch;
 	private boolean runActive;
 	private Timer panelRefreshTimer;
 
@@ -98,12 +101,16 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		seedInventoryService.resetProfile();
 		normalizePatchTypeOrderConfiguration();
 		panel.setListener(this);
-		navigationButton = NavigationButton.builder()
-			.tooltip("PatchMaster")
-			.icon(FarmRunIcon.create())
-			.panel(panel)
-			.priority(5)
-			.build();
+		addNavigation(FarmRunIcon.fallback());
+		FarmRunIcon.loadFarmersShirt(itemManager, 16, icon -> SwingUtilities.invokeLater(() ->
+		{
+			if (navigationButton != null)
+			{
+				clientToolbar.removeNavigation(navigationButton);
+				addNavigation(icon);
+				clientToolbar.addNavigation(navigationButton);
+			}
+		}));
 		clientToolbar.addNavigation(navigationButton);
 		overlayManager.add(compostReminderOverlay);
 		panelRefreshTimer = new Timer(PANEL_REFRESH_INTERVAL_MS, event ->
@@ -123,6 +130,16 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		});
 	}
 
+	private void addNavigation(java.awt.image.BufferedImage icon)
+	{
+		navigationButton = NavigationButton.builder()
+			.tooltip("Freyja’s Flora")
+			.icon(icon)
+			.panel(panel)
+			.priority(5)
+			.build();
+	}
+
 	@Override
 	protected void shutDown()
 	{
@@ -139,7 +156,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		currentPatchState = null;
 		currentPatchReplanted = false;
 		lastNavigationTarget = null;
-		lastRoutedPatch = null;
+		runProgress.clear();
 		runActive = false;
 		overlayManager.remove(compostReminderOverlay);
 		compostReminderOverlay.clear();
@@ -183,7 +200,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		currentPatchState = null;
 		currentPatchReplanted = false;
 		lastNavigationTarget = null;
-		lastRoutedPatch = null;
+		runProgress.clear();
 		runActive = false;
 		normalizePatchTypeOrderConfiguration();
 		refreshPanel();
@@ -242,8 +259,8 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		clientThread.invokeLater(() ->
 		{
 			runActive = true;
-			lastRoutedPatch = null;
-			routeNextPatch();
+			runProgress.start(getVisibleSnapshots());
+			routeCurrentPatch();
 		});
 	}
 
@@ -253,7 +270,8 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 		clientThread.invokeLater(() ->
 		{
 			runActive = true;
-			routeNextPatch();
+			runProgress.advance(getVisibleSnapshots());
+			routeCurrentPatch();
 		});
 	}
 
@@ -267,8 +285,30 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 			currentPatchState = null;
 			currentPatchReplanted = false;
 			lastNavigationTarget = null;
+			runProgress.clear();
 			runActive = false;
 			refreshPanel();
+		});
+	}
+
+	@Override
+	public void onDoneToggled(FarmPatch patch)
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (!runProgress.toggleDone(patch, getVisibleSnapshots()))
+			{
+				return;
+			}
+			runActive = true;
+			if (currentPatch == null)
+			{
+				routeCurrentPatch();
+			}
+			else
+			{
+				refreshPanel();
+			}
 		});
 	}
 
@@ -293,28 +333,28 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 
 	private void routeNextPatch()
 	{
-		long now = Instant.now().getEpochSecond();
-		Optional<PatchSnapshot> next = runPlanner.next(
-			getVisibleSnapshots(),
-			lastRoutedPatch,
-			now,
-			config.includeEmpty(),
-			config.includeUnknown(),
-			seedInventoryService.getInventory(),
-			config.skipEmptyWithoutSeed());
+		runProgress.advance(getVisibleSnapshots());
+		routeCurrentPatch();
+	}
 
-		if (!next.isPresent())
+	private void routeCurrentPatch()
+	{
+		FarmPatch nextPatch = runProgress.getCurrentPatch();
+		if (nextPatch == null)
 		{
-			runActive = false;
+			currentPatch = null;
+			currentPatchState = null;
+			currentPatchReplanted = false;
 			refreshPanel();
 			return;
 		}
-
-		routeToPatch(next.get().getPatch());
+		routeToPatch(nextPatch);
 	}
 
 	private void routeToPatch(FarmPatch patch)
 	{
+		runProgress.select(patch);
+		currentPatch = patch;
 		Player localPlayer = client.getLocalPlayer();
 		if (client.getGameState() != GameState.LOGGED_IN || localPlayer == null)
 		{
@@ -322,10 +362,8 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 			return;
 		}
 
-		currentPatch = patch;
 		currentPatchState = timeTrackingService.predict(patch).getEffectiveState(Instant.now().getEpochSecond());
 		currentPatchReplanted = false;
-		lastRoutedPatch = patch;
 		WorldPoint playerLocation = localPlayer.getWorldLocation();
 		lastNavigationTarget = patch.getNavigationTarget(playerLocation);
 		shortestPathService.routeTo(lastNavigationTarget);
@@ -384,6 +422,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 			getVisibleSnapshots(),
 			PatchTypeOrder.parse(config.patchTypeOrder()),
 			currentPatch,
+			runProgress.getDonePatches(),
 			Instant.now().getEpochSecond(),
 			seedInventoryService.getInventory());
 	}
