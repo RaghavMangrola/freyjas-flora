@@ -5,17 +5,26 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 import java.awt.Polygon;
+import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
 import net.runelite.api.ObjectComposition;
 import net.runelite.api.Player;
+import net.runelite.api.Perspective;
 import net.runelite.api.Tile;
 import net.runelite.api.WorldView;
+import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.Overlay;
@@ -29,11 +38,14 @@ final class CompostReminderOverlay extends Overlay
 	private static final int OUTLINE_THICKNESS = 3;
 	private static final int OUTLINE_FEATHERING = 2;
 	private static final BasicStroke EMPTY_PATCH_STROKE = new BasicStroke(2.0f);
+	private static final WorldPoint FARMING_GUILD_SNAPE_GRASS_TILE = new WorldPoint(1267, 3732, 0);
+	private static final WorldPoint FARMING_GUILD_WATERMELON_TILE = new WorldPoint(1267, 3727, 0);
 
 	private final Client client;
 	private final FarmRunHelperConfig config;
 	private final TimeTrackingService timeTrackingService;
 	private final ModelOutlineRenderer modelOutlineRenderer;
+	private final ItemManager itemManager;
 	private final BufferedImage magicSecateursIcon;
 	private final BufferedImage coinsIcon;
 	private final BufferedImage spadeIcon;
@@ -47,6 +59,9 @@ final class CompostReminderOverlay extends Overlay
 	private final BufferedImage seaweedSporeIcon;
 	private final BufferedImage ultracompostIcon;
 	private final Map<FarmPatch, GameObject> patchObjects = new EnumMap<>(FarmPatch.class);
+	private final Map<FarmingGuildContractPatch, GameObject> contractPatchObjects =
+		new EnumMap<>(FarmingGuildContractPatch.class);
+	private final Map<Integer, BufferedImage> contractPlantIcons = new HashMap<>();
 
 	@Inject
 	CompostReminderOverlay(
@@ -60,6 +75,7 @@ final class CompostReminderOverlay extends Overlay
 		this.config = config;
 		this.timeTrackingService = timeTrackingService;
 		this.modelOutlineRenderer = modelOutlineRenderer;
+		this.itemManager = itemManager;
 		this.magicSecateursIcon = itemManager.getImage(ItemID.FAIRY_ENCHANTED_SECATEURS);
 		this.coinsIcon = itemManager.getImage(ItemID.COINS);
 		this.spadeIcon = itemManager.getImage(ItemID.SPADE);
@@ -95,6 +111,18 @@ final class CompostReminderOverlay extends Overlay
 			if (patch.matchesSceneObject(definition.getVarbitId(), object.getWorldLocation()))
 			{
 				patchObjects.put(patch, object);
+				break;
+			}
+		}
+		if (!FarmingContractPreplant.isDevelopmentEnabled())
+		{
+			return;
+		}
+		for (FarmingGuildContractPatch patch : FarmingGuildContractPatch.values())
+		{
+			if (patch.matchesSceneObject(definition.getVarbitId(), object.getWorldLocation()))
+			{
+				contractPatchObjects.put(patch, object);
 				return;
 			}
 		}
@@ -103,11 +131,13 @@ final class CompostReminderOverlay extends Overlay
 	void untrack(GameObject object)
 	{
 		patchObjects.values().removeIf(trackedObject -> trackedObject == object);
+		contractPatchObjects.values().removeIf(trackedObject -> trackedObject == object);
 	}
 
 	void rebuild()
 	{
 		patchObjects.clear();
+		contractPatchObjects.clear();
 		WorldView worldView = client.getTopLevelWorldView();
 		if (worldView == null)
 		{
@@ -150,6 +180,7 @@ final class CompostReminderOverlay extends Overlay
 	void clear()
 	{
 		patchObjects.clear();
+		contractPatchObjects.clear();
 	}
 
 	@Override
@@ -188,7 +219,167 @@ final class CompostReminderOverlay extends Overlay
 			renderReminder(graphics, object, iconFor(patch, highlight), colorFor(highlight),
 				patch.getType() == PatchType.SEAWEED && highlight == PatchHighlight.EMPTY);
 		}
+
+		renderContractPreplantReminders(graphics, playerWorldView);
 		return null;
+	}
+
+	private void renderContractPreplantReminders(Graphics2D graphics, WorldView playerWorldView)
+	{
+		if (!FarmingContractPreplant.isDevelopmentEnabled())
+		{
+			return;
+		}
+		long now = System.currentTimeMillis() / 1000L;
+		for (FarmingContractPreplant.Crop crop : FarmingContractPreplant.crops(config))
+		{
+			GameObject object = contractPatchObjects.get(crop.getPatch());
+			if (object != null && object.getWorldView() == playerWorldView
+				&& crop.needsPreplant(timeTrackingService, now))
+			{
+				renderPreplantReminder(graphics, object, iconFor(crop), crop);
+			}
+		}
+	}
+
+	private BufferedImage iconFor(FarmingContractPreplant.Crop crop)
+	{
+		return contractPlantIcons.computeIfAbsent(crop.getItemId(), itemManager::getImage);
+	}
+
+	private void renderPreplantReminder(
+		Graphics2D graphics,
+		GameObject object,
+		BufferedImage icon,
+		FarmingContractPreplant.Crop crop)
+	{
+		Color color = config.farmingContractPreplantColor();
+		modelOutlineRenderer.drawOutline(object, OUTLINE_THICKNESS, color, OUTLINE_FEATHERING);
+		if (icon == null)
+		{
+			return;
+		}
+		Shape clickbox = object.getClickbox();
+		if (clickbox == null)
+		{
+			return;
+		}
+
+		Rectangle2D bounds = clickbox.getBounds2D();
+		int iconSize = crop.isAllotment() ? 40 : icon.getWidth();
+		Point2D iconCenter = fixedAllotmentIconCenter(crop, object.getWorldView());
+		if (iconCenter == null)
+		{
+			iconCenter = crop.isAllotment()
+				? allotmentIconCenter(clickbox, iconSize)
+				: new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
+		}
+		int iconX = (int) Math.round(iconCenter.getX() - iconSize / 2.0);
+		int iconY = (int) Math.round(iconCenter.getY() - iconSize / 2.0);
+		graphics.drawImage(icon, iconX, iconY, iconSize, iconSize, null);
+	}
+
+	private Point2D fixedAllotmentIconCenter(FarmingContractPreplant.Crop crop, WorldView worldView)
+	{
+		WorldPoint tile;
+		if (crop.getItemId() == ItemID.SNAPE_GRASS)
+		{
+			tile = FARMING_GUILD_SNAPE_GRASS_TILE;
+		}
+		else if (crop.getItemId() == ItemID.WATERMELON)
+		{
+			tile = FARMING_GUILD_WATERMELON_TILE;
+		}
+		else
+		{
+			return null;
+		}
+
+		LocalPoint localPoint = LocalPoint.fromWorld(worldView, tile);
+		if (localPoint == null)
+		{
+			return null;
+		}
+
+		Polygon canvasTile = Perspective.getCanvasTilePoly(client, localPoint);
+		if (canvasTile == null)
+		{
+			return null;
+		}
+		Rectangle2D bounds = canvasTile.getBounds2D();
+		return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
+	}
+
+	static Point2D allotmentIconCenter(Shape shape, int iconSize)
+	{
+		List<Point2D> points = polygonPoints(shape);
+		if (points.size() < 3)
+		{
+			Rectangle2D bounds = shape.getBounds2D();
+			return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
+		}
+
+		double signedArea = signedArea(points);
+		Point2D innerCorner = null;
+		double strongestTurn = 0;
+		for (int index = 0; index < points.size(); index++)
+		{
+			Point2D previous = points.get((index + points.size() - 1) % points.size());
+			Point2D current = points.get(index);
+			Point2D next = points.get((index + 1) % points.size());
+			double cross = cross(previous, current, next);
+			if (cross * signedArea < 0 && Math.abs(cross) > strongestTurn)
+			{
+				innerCorner = current;
+				strongestTurn = Math.abs(cross);
+			}
+		}
+
+		if (innerCorner == null)
+		{
+			Rectangle2D bounds = shape.getBounds2D();
+			return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
+		}
+
+		// The concave vertex is the actual inside corner of an L-shaped allotment.
+		// Centering the icon here makes the placement track the patch geometry as the
+		// camera moves, rather than choosing a corner of the clickbox's bounding box.
+		return innerCorner;
+	}
+
+	private static List<Point2D> polygonPoints(Shape shape)
+	{
+		List<Point2D> points = new ArrayList<>();
+		PathIterator iterator = shape.getPathIterator(null, 1.0);
+		double[] coordinates = new double[6];
+		while (!iterator.isDone())
+		{
+			int segment = iterator.currentSegment(coordinates);
+			if (segment == PathIterator.SEG_MOVETO || segment == PathIterator.SEG_LINETO)
+			{
+				points.add(new Point2D.Double(coordinates[0], coordinates[1]));
+			}
+			iterator.next();
+		}
+		return points;
+	}
+
+	private static double signedArea(List<Point2D> points)
+	{
+		double area = 0;
+		for (int index = 0; index < points.size(); index++)
+		{
+			Point2D current = points.get(index);
+			Point2D next = points.get((index + 1) % points.size());
+			area += current.getX() * next.getY() - next.getX() * current.getY();
+		}
+		return area / 2.0;
+	}
+
+	private static double cross(Point2D previous, Point2D current, Point2D next)
+	{
+		return (current.getX() - previous.getX()) * (next.getY() - current.getY())
+			- (current.getY() - previous.getY()) * (next.getX() - current.getX());
 	}
 
 	private Color colorFor(PatchHighlight highlight)

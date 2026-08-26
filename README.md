@@ -38,6 +38,8 @@ to the Shortest Path plugin.
   farming-themed outlines. Magic secateurs mark ready/dead patches, a herb seed
   marks empty patches, and ultracompost marks growing herb/hops/seaweed patches that
   still need compost.
+- Includes a developer-only Farming Guild contract pre-plant overlay. It is off
+  in standard RuneLite launches.
 
 ## Requirements and usage
 
@@ -98,6 +100,9 @@ Requirements: JDK 11 or newer.
 test classpath only to launch a local RuneLite development client.
 
 The `run` task starts a RuneLite development client with Farm Run Helper loaded.
+It also enables the experimental Farming Guild pre-plant overlay with
+`-Dfreyjas.flora.farmingContracts=true`. Normal RuneLite launches leave that
+overlay disabled and hide its configuration controls.
 
 Before submitting to the Plugin Hub, publish this directory as the root of its
 own public GitHub repository and follow the Plugin Hub's current submission

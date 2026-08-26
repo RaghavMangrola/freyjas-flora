@@ -77,6 +77,16 @@ final class TimeTrackingService
 			readyAt);
 	}
 
+	Integer getObservedVarbitValue(FarmingGuildContractPatch patch)
+	{
+		String stored = configManager.getRSProfileConfiguration(
+			TimeTrackingConfig.CONFIG_GROUP,
+			patch.getTimeTrackingKey());
+		return TimeTrackingValue.parse(stored)
+			.map(TimeTrackingValue::getVarbitValue)
+			.orElse(null);
+	}
+
 	static long birdHouseReadyAt(long observedAt)
 	{
 		return observedAt + BIRD_HOUSE_DURATION_SECONDS;
