@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.plugins.timetracking.farming.CompostState;
@@ -106,16 +105,13 @@ public class FarmRunHelperPanelTest
 		JLabel herbDragLabel = labelWithTooltip(panel, "Drag Herbs to reorder");
 		assertNotNull(herbDragLabel);
 		assertEquals(FontManager.getRunescapeBoldFont(), herbDragLabel.getFont());
-		assertEquals(TransferHandler.MOVE, herbDragLabel.getTransferHandler().getSourceActions(herbDragLabel));
 		assertTrue(herbDragLabel.getMouseMotionListeners().length > 0);
 		JLabel herbName = labelWithText(panel, "1. Herbs");
 		assertNotNull(herbName);
-		assertEquals(TransferHandler.MOVE, herbName.getTransferHandler().getSourceActions(herbName));
-		assertTrue(herbName.getMouseMotionListeners().length > 0);
 		JComponent herbRow = (JComponent) herbName.getParent();
-		assertEquals(TransferHandler.MOVE, herbRow.getTransferHandler().getSourceActions(herbRow));
-		assertTrue(herbRow.getMouseMotionListeners().length > 0);
-		assertNotNull(buttonWithText(herbRow, "↑").getTransferHandler());
+		assertEquals(null, herbDragLabel.getTransferHandler());
+		assertEquals(0, herbName.getMouseMotionListeners().length);
+		assertEquals(0, herbRow.getMouseMotionListeners().length);
 		SwingUtilities.invokeAndWait(() -> panel.movePatchTypeTo(PatchType.HERB, initialOrder.size()));
 		assertEquals(PatchType.HERB, savedOrder.get().get(savedOrder.get().size() - 1));
 
