@@ -1,11 +1,11 @@
 package com.farmrunhelper;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.util.function.Consumer;
+import net.runelite.api.ItemID;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.util.AsyncBufferedImage;
+import net.runelite.client.util.ImageUtil;
 
 final class FarmRunIcon
 {
@@ -13,46 +13,73 @@ final class FarmRunIcon
 	{
 	}
 
-	static BufferedImage create()
+	static BufferedImage fallback()
 	{
-		BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D graphics = image.createGraphics();
+		return new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+	}
+
+	@SuppressWarnings("deprecation")
+	static void loadFarmersShirt(ItemManager itemManager, int size, Consumer<BufferedImage> onLoaded)
+	{
+		if (itemManager == null)
+		{
+			return;
+		}
+
+		AsyncBufferedImage source = itemManager.getImage(ItemID.FARMERS_SHIRT);
+		if (source == null)
+		{
+			return;
+		}
+
+		source.onLoaded(() -> onLoaded.accept(fitOpaqueContent(source, size)));
+	}
+
+	static BufferedImage fitOpaqueContent(BufferedImage source, int size)
+	{
+		int minimumX = source.getWidth();
+		int minimumY = source.getHeight();
+		int maximumX = -1;
+		int maximumY = -1;
+		for (int y = 0; y < source.getHeight(); y++)
+		{
+			for (int x = 0; x < source.getWidth(); x++)
+			{
+				if ((source.getRGB(x, y) >>> 24) == 0)
+				{
+					continue;
+				}
+				minimumX = Math.min(minimumX, x);
+				minimumY = Math.min(minimumY, y);
+				maximumX = Math.max(maximumX, x);
+				maximumY = Math.max(maximumY, y);
+			}
+		}
+
+		if (maximumX < minimumX || maximumY < minimumY)
+		{
+			return new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+		}
+
+		BufferedImage trimmed = source.getSubimage(
+			minimumX,
+			minimumY,
+			maximumX - minimumX + 1,
+			maximumY - minimumY + 1);
+		double scale = Math.min((double) size / trimmed.getWidth(), (double) size / trimmed.getHeight());
+		int width = Math.max(1, (int) Math.round(trimmed.getWidth() * scale));
+		int height = Math.max(1, (int) Math.round(trimmed.getHeight() * scale));
+		BufferedImage scaled = ImageUtil.resizeImage(trimmed, width, height);
+		BufferedImage result = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D graphics = result.createGraphics();
 		try
 		{
-			graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-			Path2D leaf = new Path2D.Double();
-			leaf.moveTo(2.5, 13);
-			leaf.curveTo(1.8, 6, 7, 1.2, 14.2, 1.8);
-			leaf.curveTo(14, 9.2, 9.5, 14.2, 2.5, 13);
-			leaf.closePath();
-			graphics.setColor(new Color(18, 55, 28));
-			graphics.setStroke(new BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-			graphics.draw(leaf);
-			graphics.setColor(new Color(76, 164, 75));
-			graphics.fill(leaf);
-
-			graphics.setColor(new Color(196, 229, 133));
-			graphics.setStroke(new BasicStroke(1.4f));
-			graphics.drawLine(2, 14, 12, 4);
-
-			Path2D droplet = new Path2D.Double();
-			droplet.moveTo(3.2, 0.8);
-			droplet.curveTo(1.9, 2.5, 1.1, 3.6, 1.1, 4.7);
-			droplet.curveTo(1.1, 6.1, 2, 7, 3.2, 7);
-			droplet.curveTo(4.5, 7, 5.4, 6.1, 5.4, 4.7);
-			droplet.curveTo(5.4, 3.6, 4.5, 2.5, 3.2, 0.8);
-			droplet.closePath();
-			graphics.setColor(new Color(22, 61, 85));
-			graphics.setStroke(new BasicStroke(1.3f));
-			graphics.draw(droplet);
-			graphics.setColor(PatchMasterTheme.COMPOST);
-			graphics.fill(droplet);
+			graphics.drawImage(scaled, (size - width) / 2, (size - height) / 2, null);
 		}
 		finally
 		{
 			graphics.dispose();
 		}
-		return image;
+		return result;
 	}
 }
