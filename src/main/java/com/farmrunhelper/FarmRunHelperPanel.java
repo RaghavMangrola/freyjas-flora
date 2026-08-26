@@ -20,6 +20,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.Duration;
@@ -535,10 +536,10 @@ final class FarmRunHelperPanel extends PluginPanel
 		component.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 		component.setToolTipText("Drag " + type.getDisplayName() + " to reorder");
 		component.setTransferHandler(new PatchTypeTransferHandler(type));
-		component.addMouseListener(new MouseAdapter()
+		component.addMouseMotionListener(new MouseMotionAdapter()
 		{
 			@Override
-			public void mousePressed(MouseEvent event)
+			public void mouseDragged(MouseEvent event)
 			{
 				JComponent source = (JComponent) event.getSource();
 				source.getTransferHandler().exportAsDrag(source, event, TransferHandler.MOVE);

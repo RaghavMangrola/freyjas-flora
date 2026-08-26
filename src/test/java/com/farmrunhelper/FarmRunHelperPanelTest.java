@@ -107,11 +107,14 @@ public class FarmRunHelperPanelTest
 		assertNotNull(herbDragLabel);
 		assertEquals(FontManager.getRunescapeBoldFont(), herbDragLabel.getFont());
 		assertEquals(TransferHandler.MOVE, herbDragLabel.getTransferHandler().getSourceActions(herbDragLabel));
+		assertTrue(herbDragLabel.getMouseMotionListeners().length > 0);
 		JLabel herbName = labelWithText(panel, "1. Herbs");
 		assertNotNull(herbName);
 		assertEquals(TransferHandler.MOVE, herbName.getTransferHandler().getSourceActions(herbName));
+		assertTrue(herbName.getMouseMotionListeners().length > 0);
 		JComponent herbRow = (JComponent) herbName.getParent();
 		assertEquals(TransferHandler.MOVE, herbRow.getTransferHandler().getSourceActions(herbRow));
+		assertTrue(herbRow.getMouseMotionListeners().length > 0);
 		assertNotNull(buttonWithText(herbRow, "↑").getTransferHandler());
 		SwingUtilities.invokeAndWait(() -> panel.movePatchTypeTo(PatchType.HERB, initialOrder.size()));
 		assertEquals(PatchType.HERB, savedOrder.get().get(savedOrder.get().size() - 1));
