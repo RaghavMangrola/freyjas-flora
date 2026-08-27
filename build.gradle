@@ -36,6 +36,6 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('run', JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
 	mainClass = pluginMainClass
-	jvmArgs '-ea'
+	jvmArgs '-ea', '-Dfreyjas.flora.farmingContracts=true'
 	args '--developer-mode', '--debug'
 }

@@ -15,13 +15,9 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +40,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 import javax.swing.border.EmptyBorder;
 import net.runelite.api.Constants;
 import net.runelite.client.game.ItemManager;
@@ -66,7 +61,6 @@ final class FarmRunHelperPanel extends PluginPanel
 	private static final int STATUS_TILE_GAP = 2;
 	private static final String ORDER_TYPE_PROPERTY = "patchmaster.orderType";
 	private static final String STATUS_TILE_PROPERTY = "patchmaster.statusTile";
-	private static final DataFlavor PATCH_TYPE_FLAVOR = new DataFlavor(PatchType.class, "Patch type");
 	private static final Icon CHEVRON_RIGHT = new SectionChevronIcon(false);
 	private static final Icon CHEVRON_DOWN = new SectionChevronIcon(true);
 
@@ -198,7 +192,6 @@ final class FarmRunHelperPanel extends PluginPanel
 			PluginPanel.BORDER_OFFSET,
 			PluginPanel.BORDER_OFFSET,
 			PluginPanel.BORDER_OFFSET));
-		patchList.setTransferHandler(new PatchTypeTransferHandler(null));
 		JPanel patchListWrapper = new JPanel(new BorderLayout());
 		patchListWrapper.setBackground(PatchMasterTheme.BACKGROUND);
 		patchListWrapper.add(patchList, BorderLayout.NORTH);
@@ -397,7 +390,7 @@ final class FarmRunHelperPanel extends PluginPanel
 		handle.setForeground(PatchMasterTheme.TEXT_SECONDARY);
 		handle.setFont(FontManager.getRunescapeBoldFont());
 		handle.setBorder(new EmptyBorder(0, 0, 0, 3));
-		installOrderDragSource(handle, type);
+		installOrderDragHandle(handle, type);
 		row.add(handle, BorderLayout.WEST);
 
 		JLabel name = new JLabel((index + 1) + ". " + type.getDisplayName());
@@ -527,20 +520,33 @@ final class FarmRunHelperPanel extends PluginPanel
 		return key.toString();
 	}
 
-	private void installOrderDragSource(JComponent component, PatchType type)
+	private void installOrderDragHandle(JComponent handle, PatchType type)
 	{
-		component.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-		component.setToolTipText("Drag " + type.getDisplayName() + " to reorder");
-		component.setTransferHandler(new PatchTypeTransferHandler(type));
-		component.addMouseListener(new MouseAdapter()
+		handle.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+		handle.setToolTipText("Drag " + type.getDisplayName() + " to reorder");
+		OrderDragListener listener = new OrderDragListener(type);
+		handle.addMouseListener(listener);
+		handle.addMouseMotionListener(listener);
+	}
+
+	private void setOrderDropHighlight(int insertionIndex)
+	{
+		int highlightedIndex = Math.min(insertionIndex, patchTypeOrder.size() - 1);
+		for (Component component : patchList.getComponents())
 		{
-			@Override
-			public void mousePressed(MouseEvent event)
+			if (!(component instanceof JPanel))
 			{
-				JComponent source = (JComponent) event.getSource();
-				source.getTransferHandler().exportAsDrag(source, event, TransferHandler.MOVE);
+				continue;
 			}
-		});
+			Object value = ((JPanel) component).getClientProperty(ORDER_TYPE_PROPERTY);
+			if (value instanceof PatchType)
+			{
+				int index = patchTypeOrder.indexOf(value);
+				component.setBackground(index == highlightedIndex
+					? PatchMasterTheme.CARD_HOVER
+					: PatchMasterTheme.CARD);
+			}
+		}
 	}
 
 	private int orderInsertionIndexAt(Point point)
@@ -565,88 +571,54 @@ final class FarmRunHelperPanel extends PluginPanel
 		return patchTypeOrder.size();
 	}
 
-	private final class PatchTypeTransferHandler extends TransferHandler
-	{
-		private final PatchType sourceType;
-
-		private PatchTypeTransferHandler(PatchType sourceType)
-		{
-			this.sourceType = sourceType;
-		}
-
-		@Override
-		public int getSourceActions(JComponent component)
-		{
-			return sourceType == null ? NONE : MOVE;
-		}
-
-		@Override
-		protected Transferable createTransferable(JComponent component)
-		{
-			return sourceType == null ? null : new PatchTypeTransferable(sourceType);
-		}
-
-		@Override
-		public boolean canImport(TransferSupport support)
-		{
-			if (!editingOrder || !support.isDrop() || !support.isDataFlavorSupported(PATCH_TYPE_FLAVOR))
-			{
-				return false;
-			}
-			support.setDropAction(MOVE);
-			return true;
-		}
-
-		@Override
-		public boolean importData(TransferSupport support)
-		{
-			if (!canImport(support))
-			{
-				return false;
-			}
-			try
-			{
-				PatchType type = (PatchType) support.getTransferable().getTransferData(PATCH_TYPE_FLAVOR);
-				Point point = support.getDropLocation().getDropPoint();
-				point = SwingUtilities.convertPoint(support.getComponent(), point, patchList);
-				return movePatchTypeTo(type, orderInsertionIndexAt(point));
-			}
-			catch (UnsupportedFlavorException | IOException exception)
-			{
-				return false;
-			}
-		}
-	}
-
-	private static final class PatchTypeTransferable implements Transferable
+	private final class OrderDragListener extends MouseAdapter
 	{
 		private final PatchType type;
+		private boolean dragging;
 
-		private PatchTypeTransferable(PatchType type)
+		private OrderDragListener(PatchType type)
 		{
 			this.type = type;
 		}
 
 		@Override
-		public DataFlavor[] getTransferDataFlavors()
+		public void mousePressed(MouseEvent event)
 		{
-			return new DataFlavor[]{PATCH_TYPE_FLAVOR};
-		}
-
-		@Override
-		public boolean isDataFlavorSupported(DataFlavor flavor)
-		{
-			return PATCH_TYPE_FLAVOR.equals(flavor);
-		}
-
-		@Override
-		public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException
-		{
-			if (!isDataFlavorSupported(flavor))
+			if (event.getButton() == MouseEvent.BUTTON1)
 			{
-				throw new UnsupportedFlavorException(flavor);
+				dragging = true;
 			}
-			return type;
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent event)
+		{
+			if (!dragging)
+			{
+				return;
+			}
+			setOrderDropHighlight(orderInsertionIndexAt(toPatchListPoint(event)));
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent event)
+		{
+			if (!dragging || event.getButton() != MouseEvent.BUTTON1)
+			{
+				return;
+			}
+			dragging = false;
+			int insertionIndex = orderInsertionIndexAt(toPatchListPoint(event));
+			setOrderDropHighlight(-1);
+			movePatchTypeTo(type, insertionIndex);
+		}
+
+		private Point toPatchListPoint(MouseEvent event)
+		{
+			return SwingUtilities.convertPoint(
+				(JComponent) event.getSource(),
+				event.getPoint(),
+				patchList);
 		}
 	}
 

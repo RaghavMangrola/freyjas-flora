@@ -15,7 +15,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Herbs",
 		description = "Choose the herb patches shown, routed, and highlighted",
-		position = 2,
+		position = 3,
 		closedByDefault = true
 	)
 	String HERB_PATCHES = "herbPatches";
@@ -23,7 +23,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Hops",
 		description = "Choose the hops patches shown, routed, and highlighted",
-		position = 3,
+		position = 4,
 		closedByDefault = true
 	)
 	String HOPS_PATCHES = "hopsPatches";
@@ -31,7 +31,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Trees",
 		description = "Choose the regular tree patches shown, routed, and highlighted",
-		position = 4,
+		position = 5,
 		closedByDefault = true
 	)
 	String TREE_PATCHES = "treePatches";
@@ -39,7 +39,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Fruit trees",
 		description = "Choose the fruit tree patches shown, routed, and highlighted",
-		position = 5,
+		position = 6,
 		closedByDefault = true
 	)
 	String FRUIT_TREE_PATCHES = "fruitTreePatches";
@@ -47,7 +47,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Hardwood trees",
 		description = "Choose the hardwood patches shown, routed, and highlighted",
-		position = 6,
+		position = 7,
 		closedByDefault = true
 	)
 	String HARDWOOD_TREE_PATCHES = "hardwoodTreePatches";
@@ -55,7 +55,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Calquat trees",
 		description = "Choose the calquat patches shown, routed, and highlighted",
-		position = 7,
+		position = 8,
 		closedByDefault = true
 	)
 	String CALQUAT_PATCHES = "calquatPatches";
@@ -63,7 +63,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Coral",
 		description = "Choose the Great Conch coral nurseries shown and routed",
-		position = 8,
+		position = 9,
 		closedByDefault = true
 	)
 	String CORAL_PATCHES = "coralPatches";
@@ -71,7 +71,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Seaweed",
 		description = "Choose the seaweed patches shown, routed, and highlighted",
-		position = 9,
+		position = 10,
 		closedByDefault = true
 	)
 	String SEAWEED_PATCHES = "seaweedPatches";
@@ -79,7 +79,7 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Birdhouses",
 		description = "Choose the Fossil Island birdhouses shown and routed",
-		position = 10,
+		position = 11,
 		closedByDefault = true
 	)
 	String BIRD_HOUSE_PATCHES = "birdHousePatches";
@@ -94,15 +94,22 @@ public interface FarmRunHelperConfig extends Config
 	@ConfigSection(
 		name = "Scene highlights",
 		description = "Colors and visual reminders drawn over farming patches",
-		position = 1,
+		position = 2,
 		closedByDefault = true
 	)
 	String COMPOST_REMINDERS = "compostReminders";
 
 	@ConfigSection(
+		name = "Farming contracts",
+		description = "Choose a Farming Guild crop to keep ready for a contract",
+		position = 13
+	)
+	String FARMING_CONTRACTS = "farmingContracts";
+
+	@ConfigSection(
 		name = "Shortest Path",
 		description = "Control how PatchMaster hands destinations to Shortest Path",
-		position = 11,
+		position = 12,
 		closedByDefault = true
 	)
 	String NAVIGATION = "navigation";
@@ -638,6 +645,84 @@ public interface FarmRunHelperConfig extends Config
 	default TreeReadyAction treeReadyAction()
 	{
 		return TreeReadyAction.MAGIC_SECATEURS;
+	}
+
+	@ConfigItem(
+		keyName = "farmingContractTier",
+		name = "Pre-plant contract tier",
+		description = "Choose the medium or hard Farming Guild contract pre-plant plan",
+		section = FARMING_CONTRACTS,
+		hidden = true,
+		position = 0
+	)
+	default FarmingContractTier farmingContractTier()
+	{
+		return FarmingContractTier.HARD;
+	}
+
+	@ConfigItem(
+		keyName = "hardContractHerb",
+		name = "Hard herb",
+		description = "Herb used by the hard contract pre-plant plan",
+		section = FARMING_CONTRACTS,
+		hidden = true,
+		position = 1
+	)
+	default FarmingContractOptions.HardHerb hardContractHerb()
+	{
+		return FarmingContractOptions.HardHerb.CADANTINE;
+	}
+
+	@ConfigItem(
+		keyName = "hardContractTree",
+		name = "Hard tree",
+		description = "Choose Maple tree or Yew tree for the hard contract tree spot",
+		section = FARMING_CONTRACTS,
+		hidden = true,
+		position = 2
+	)
+	default FarmingContractOptions.HardTree hardContractTree()
+	{
+		return FarmingContractOptions.HardTree.MAPLE;
+	}
+
+	@ConfigItem(
+		keyName = "hardContractBush",
+		name = "Hard bush",
+		description = "Bush used by the hard contract pre-plant plan",
+		section = FARMING_CONTRACTS,
+		hidden = true,
+		position = 3
+	)
+	default FarmingContractOptions.HardBush hardContractBush()
+	{
+		return FarmingContractOptions.HardBush.POISON_IVY;
+	}
+
+	@ConfigItem(
+		keyName = "mediumContractBush",
+		name = "Medium bush",
+		description = "Bush used by the medium contract pre-plant plan",
+		section = FARMING_CONTRACTS,
+		hidden = true,
+		position = 4
+	)
+	default FarmingContractOptions.MediumBush mediumContractBush()
+	{
+		return FarmingContractOptions.MediumBush.WHITEBERRIES;
+	}
+
+	@ConfigItem(
+		keyName = "farmingContractPreplantColor",
+		name = "Pre-plant reminder color",
+		description = "Color used for Farming Guild contract pre-plant reminders",
+		section = FARMING_CONTRACTS,
+		hidden = true,
+		position = 5
+	)
+	default Color farmingContractPreplantColor()
+	{
+		return PatchMasterTheme.ROUTING;
 	}
 
 	@ConfigItem(

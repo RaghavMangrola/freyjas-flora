@@ -131,6 +131,24 @@ public class RunPlannerTest
 			planner.next(snapshots, FarmPatch.SEAWEED_NORTH, 1000L, true, true, SeedInventory.empty(), false).get().getPatch());
 	}
 
+	@Test
+	public void identifiesOnlyActionablePatchesForRunProgress()
+	{
+		List<PatchSnapshot> snapshots = Arrays.asList(
+			snapshot(FarmPatch.ARDOUGNE, PatchState.READY, 0L),
+			snapshot(FarmPatch.CORAL_EAST, PatchState.GROWING, 2000L),
+			snapshot(FarmPatch.SEAWEED_NORTH, PatchState.DEAD, 0L));
+
+		assertEquals(
+			FarmPatch.ARDOUGNE,
+			planner.next(snapshots, null, 1000L, true, true, SeedInventory.empty(), false).get().getPatch());
+		assertEquals(
+			FarmPatch.SEAWEED_NORTH,
+			planner.next(snapshots, FarmPatch.ARDOUGNE, 1000L, true, true, SeedInventory.empty(), false).get().getPatch());
+		assertFalse(planner.isActionable(
+			snapshots.get(1), 1000L, true, true, SeedInventory.empty(), false));
+	}
+
 	private static PatchSnapshot snapshot(FarmPatch patch, PatchState state, long readyAt)
 	{
 		return new PatchSnapshot(patch, PatchPrediction.known("Crop", state, 500L, readyAt));

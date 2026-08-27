@@ -49,7 +49,7 @@ public class FarmRunHelperConfigTest
 			ConfigSection section = field.getAnnotation(ConfigSection.class);
 			assertNotNull(section);
 			assertEquals(names[index], section.name());
-			assertEquals(index + 2, section.position());
+			assertEquals(index + 3, section.position());
 			assertTrue(section.closedByDefault());
 		}
 	}
@@ -61,17 +61,22 @@ public class FarmRunHelperConfigTest
 			.getAnnotation(ConfigSection.class);
 		ConfigSection highlights = FarmRunHelperConfig.class.getField("COMPOST_REMINDERS")
 			.getAnnotation(ConfigSection.class);
+		ConfigSection contracts = FarmRunHelperConfig.class.getField("FARMING_CONTRACTS")
+			.getAnnotation(ConfigSection.class);
 		ConfigSection shortestPath = FarmRunHelperConfig.class.getField("NAVIGATION")
 			.getAnnotation(ConfigSection.class);
 
 		assertEquals("Run behavior", runBehavior.name());
 		assertEquals(0, runBehavior.position());
 		assertFalse(runBehavior.closedByDefault());
+		assertEquals("Farming contracts", contracts.name());
+		assertEquals(13, contracts.position());
+		assertFalse(contracts.closedByDefault());
 		assertEquals("Scene highlights", highlights.name());
-		assertEquals(1, highlights.position());
+		assertEquals(2, highlights.position());
 		assertTrue(highlights.closedByDefault());
 		assertEquals("Shortest Path", shortestPath.name());
-		assertEquals(11, shortestPath.position());
+		assertEquals(12, shortestPath.position());
 		assertTrue(shortestPath.closedByDefault());
 	}
 
@@ -167,6 +172,26 @@ public class FarmRunHelperConfigTest
 		assertEquals(PatchMasterTheme.DEAD, config.deadPatchColor());
 		assertEquals(PatchMasterTheme.DISEASED, config.diseasedPatchColor());
 		assertEquals(TreeReadyAction.MAGIC_SECATEURS, config.treeReadyAction());
+		assertEquals(FarmingContractTier.HARD, config.farmingContractTier());
+		assertEquals(FarmingContractOptions.HardHerb.CADANTINE, config.hardContractHerb());
+		assertEquals(FarmingContractOptions.HardTree.MAPLE, config.hardContractTree());
+		assertEquals(FarmingContractOptions.HardBush.POISON_IVY, config.hardContractBush());
+		assertEquals(FarmingContractOptions.MediumBush.WHITEBERRIES, config.mediumContractBush());
+		assertEquals(PatchMasterTheme.ROUTING, config.farmingContractPreplantColor());
+	}
+
+	@Test
+	public void keepsContractControlsHiddenWhileTheFeatureIsInDevelopment() throws Exception
+	{
+		for (String methodName : new String[]{
+			"farmingContractTier", "hardContractHerb", "hardContractTree", "hardContractBush",
+			"mediumContractBush", "farmingContractPreplantColor"})
+		{
+			ConfigItem item = FarmRunHelperConfig.class.getMethod(methodName).getAnnotation(ConfigItem.class);
+			assertNotNull(item);
+			assertEquals(FarmRunHelperConfig.FARMING_CONTRACTS, item.section());
+			assertTrue(item.hidden());
+		}
 	}
 
 	@Test
