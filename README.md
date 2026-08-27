@@ -1,6 +1,6 @@
-# PatchMaster
+# Freyja’s Flora
 
-PatchMaster is a visual-only RuneLite plugin for herb, hops, regular tree, fruit tree,
+Freyja’s Flora is a navigation-first RuneLite plugin for herb, hops, regular tree, fruit tree,
 hardwood tree, calquat, coral, giant seaweed, and birdhouse runs. It reads the same profile-scoped records maintained by
 RuneLite's built-in Time Tracking plugin and sends user-selected destinations
 to the Shortest Path plugin.
@@ -43,12 +43,13 @@ to the Shortest Path plugin.
 
 ## Requirements and usage
 
-1. Enable **PatchMaster**. Its declared dependency enables RuneLite's
+1. Enable **Freyja’s Flora**. Its declared dependency enables RuneLite's
    built-in **Time Tracking** plugin.
 2. Install and enable **Shortest Path** from the Plugin Hub.
-3. Open the PatchMaster sidebar panel.
-4. Optionally click **Order** and use the arrow buttons to arrange the patch
-   types for this profile, then click **Done**.
+3. Open the Freyja’s Flora sidebar panel.
+4. Optionally click **Order**, then drag a row's **≡** grip or use the arrow
+   buttons to arrange the patch types for this profile. Click **Done** when
+   the order is ready.
 5. Click **Start run**, **Next patch**, or the arrow beside a specific patch.
 6. Follow the route and perform every teleport, movement, and farming action
    yourself.
@@ -73,7 +74,7 @@ Time Tracking only knows a patch after the account has visited a region where
 RuneLite can observe it. Unknown patches can be included in a run specifically
 to populate that data.
 
-PatchMaster learns storage counts when the Bank or Seed Vault item container is
+Freyja’s Flora learns storage counts when the Bank or Seed Vault item container is
 open. Open each storage once per account to create its first snapshot. The last
 complete snapshot remains available after the storage closes and is replaced
 whenever RuneLite observes a changed container. A `?` beside Bank or Vault
@@ -82,7 +83,7 @@ means that storage has not been observed for the current RuneScape profile yet.
 ## Scope
 
 The Plugin Hub already has broader farming plugins that manage supplies,
-teleport preferences, or scene highlights. PatchMaster is deliberately
+teleport preferences, or scene highlights. Freyja’s Flora is deliberately
 narrower: it is a Time Tracking view and Shortest Path controller for the
 supported farming-run and birdhouse families. It does not duplicate inventory loadouts,
 interaction highlighting, profit tracking, or custom teleport logic.
@@ -99,7 +100,7 @@ Requirements: JDK 11 or newer.
 `build` produces the standard unbundled plugin JAR. The `run` task uses the
 test classpath only to launch a local RuneLite development client.
 
-The `run` task starts a RuneLite development client with Farm Run Helper loaded.
+The `run` task starts a RuneLite development client with Freyja’s Flora loaded.
 It also enables the experimental Farming Guild pre-plant overlay with
 `-Dfreyjas.flora.farmingContracts=true`. Normal RuneLite launches leave that
 overlay disabled and hide its configuration controls.
