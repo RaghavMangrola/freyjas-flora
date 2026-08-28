@@ -1,4 +1,4 @@
-# Freyja’s Flora
+# Freyja's Flora
 
 RuneLite farming and birdhouse run planner. Uses Time Tracking data and sends
 destinations to the Shortest Path plugin.
@@ -13,8 +13,8 @@ destinations to the Shortest Path plugin.
 
 ## Use
 
-Enable **Freyja’s Flora**, **Time Tracking**, and **Shortest Path**, then open
-the Freyja’s Flora sidebar.
+Enable **Freyja's Flora**, **Time Tracking**, and **Shortest Path**, then open
+the Freyja's Flora sidebar.
 
 Time Tracking learns a location after it has been observed. Bank and Seed Vault
 counts are saved snapshots; open each storage once to populate them.

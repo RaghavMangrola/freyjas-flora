@@ -123,7 +123,7 @@ final class FarmRunHelperPanel extends PluginPanel
 		JPanel brand = new JPanel(new BorderLayout(5, 0));
 		brand.setBackground(PatchMasterTheme.BACKGROUND);
 		brand.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-		JLabel title = new JLabel("Freyja’s Flora", new ImageIcon(FarmRunIcon.fallback()), SwingConstants.LEFT);
+		JLabel title = new JLabel("Freyja's Flora", new ImageIcon(FarmRunIcon.fallback()), SwingConstants.LEFT);
 		title.setFont(FontManager.getRunescapeBoldFont());
 		title.setForeground(PatchMasterTheme.BRAND);
 		title.setIconTextGap(6);

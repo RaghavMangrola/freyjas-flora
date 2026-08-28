@@ -140,7 +140,7 @@ public class FarmRunHelperPanelTest
 			seedStock);
 		flushEdt();
 
-		JLabel title = labelWithText(panel, "Freyja’s Flora");
+		JLabel title = labelWithText(panel, "Freyja's Flora");
 		assertNotNull(title);
 		assertEquals(PatchMasterTheme.BRAND, title.getForeground());
 		assertEquals(PatchMasterTheme.MOSS, buttonWithText(panel, "Start run").getBackground());
@@ -273,7 +273,7 @@ public class FarmRunHelperPanelTest
 				.build());
 		flushEdt();
 
-		JLabel title = labelWithText(panel, "Freyja’s Flora");
+		JLabel title = labelWithText(panel, "Freyja's Flora");
 		assertNotNull(title);
 		assertTrue(title.getPreferredSize().width <= 205);
 		assertTrue(buttonWithText(panel, "Start run").getPreferredSize().width <= 205);

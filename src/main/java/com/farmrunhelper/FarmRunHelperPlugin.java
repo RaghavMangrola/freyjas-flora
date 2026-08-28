@@ -34,7 +34,7 @@ import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
-	name = "Freyja’s Flora",
+	name = "Freyja's Flora",
 	description = "Tracks farming patches and birdhouses and sends visual destinations to Shortest Path",
 	tags = {"farming", "herb", "hops", "tree", "fruit", "hardwood", "calquat", "coral", "seaweed", "birdhouse", "hunter", "timer", "route", "path"}
 )
@@ -133,7 +133,7 @@ public class FarmRunHelperPlugin extends Plugin implements FarmRunHelperPanel.Li
 	private void addNavigation(java.awt.image.BufferedImage icon)
 	{
 		navigationButton = NavigationButton.builder()
-			.tooltip("Freyja’s Flora")
+			.tooltip("Freyja's Flora")
 			.icon(icon)
 			.panel(panel)
 			.priority(5)
